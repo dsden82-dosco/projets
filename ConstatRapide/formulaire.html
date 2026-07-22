@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta name="robots" content="noindex">
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constat rapide de rentrée</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+
+    <!-- Bootstrap Grid + DSFR -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/dsfr/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/utility/icons/icons.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    
+<style>
+:root {
+    --background-default-grey: #f6f6f6;
+    --background-alt-blue-france: #ececfe;
+    --border-default-grey: #dddddd;
+    --text-default-grey: #161616;
+    --text-mention-grey: #666666;
+    --blue-france-main-525: #000091;
+    --blue-france-sun-113: #1212ff;
+    --error-425: #ce0500;
+    --success-425: #18753c;
+    --focus-outline: #0a76f6;
+    --radius: 0.5rem;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    background-color: var(--background-default-grey);
+    color: var(--text-default-grey);
+    font-family: Marianne, Arial, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.container {
+    max-width: 860px;
+}
+
+h1, h2, h3 {
+    color: var(--blue-france-main-525);
+    font-weight: 700;
+}
+
+.lead,
+.text-muted,
+small {
+    color: var(--text-mention-grey) !important;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid var(--border-default-grey);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: none;
+}
+
+.card-header {
+    background: var(--blue-france-main-525) !important;
+    color: #fff !important;
+    border-bottom: none;
+    padding: 1rem 1.25rem;
+}
+
+.card-header h2 {
+    color: #fff;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border .75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.effectif-cell {
+    --cell-bg: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: .6rem;
+}
+
+.ulis-section .effectif-cell {
+    --cell-bg: #f9f8f6;
+}
+
+.effectif-cell label {
+    position: absolute;
+    top: .6rem;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--cell-bg);
+    margin: 0;
+    padding: 0 .4rem;
+    font-size: .9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-mention-grey);
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.effectif-cell input[type="number"] {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+    padding: .75rem .5rem;
+    border: 2px solid #6a6a6a;
+    border-radius: .25rem;
+    background: #fff;
+    color: var(--text-default-grey);
+    appearance: textfield;
+    transition: border-color .2s ease, outline .2s ease;
+}
+
+.effectif-cell input[type="number"]::-webkit-inner-spin-button,
+.effectif-cell input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+.effectif-cell input[type="number"]:focus-visible,
+button:focus-visible {
+    outline: 3px solid var(--focus-outline);
+    outline-offset: 2px;
+}
+
+.effectif-cell input[type="number"].is-invalid {
+    border-color: var(--error-425);
+    background-color: #fff5f5;
+}
+
+.section-title {
+  display: block;
+  margin-top: 1.25rem;
+  font-size: 1rem;
+  letter-spacing: .06em;
+  color: var(--blue-france-main-525);
+  font-weight: 700;
+}
+
+.section-title:first-child {
+    margin-top: 0;
+}
+
+.section-title + .row {
+    margin-top: .5rem;
+}
+
+.ulis-section {
+    background: #f9f8f6;
+    border: 1px solid var(--border-default-grey);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1.25rem;
+}
+
+.alert {
+    border: none;
+    border-left: 4px solid var(--error-425);
+    border-radius: .25rem;
+    background: #fff4f3;
+    color: var(--text-default-grey);
+    padding: 1rem;
+}
+
+.alert-danger {
+    border-left-color: var(--error-425);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    min-height: 3rem;
+}
+
+.btn-primary {
+    background: var(--blue-france-main-525);
+    border-color: var(--blue-france-main-525);
+    color: #fff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: #fff !important;
+    border-color: var(--blue-france-main-525) !important;
+    color: var(--blue-france-main-525) !important;
+}
+
+.btn-primary:disabled {
+    opacity: .7;
+}
+
+/* #btnDownloadPdf explicite : le survol par défaut de .btn-outline-primary
+   (inversion de couleurs) est cassé par le CSS du DSFR chargé sur la page
+   (le texte passe en blanc mais le fond reste transparent, texte invisible) */
+#btnDownloadPdf {
+    color: var(--blue-france-main-525);
+    background: transparent;
+    border-color: var(--blue-france-main-525);
+}
+
+#btnDownloadPdf:hover,
+#btnDownloadPdf:focus {
+    color: var(--text-mention-grey);
+    background: transparent;
+    border-color: var(--text-mention-grey);
+}
+
+#successBlock {
+    border: 1px solid #b8fec9;
+    background: #f3fdeb;
+    border-radius: var(--radius);
+}
+
+#successBlock h3 {
+    color: var(--success-425);
+}
+
+#liveRegion {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+}
+
+#pdfTemplate {
+    display: none;
+    color: #161616;
+    font-family: Marianne, Arial, sans-serif;
+}
+
+#pdfTemplate h1 {
+    font-size: 18px;
+    color: var(--blue-france-main-525);
+    margin: 0 0 8px;
+}
+
+#pdfTemplate h2 {
+    font-size: 14px;
+    color: var(--blue-france-main-525);
+    margin: 14px 0 2px;
+}
+
+#pdfTemplate h2 + table {
+    margin-top: 6px;
+}
+
+#pdfTemplate p {
+    margin: 2px 0;
+    font-size: 13px;
+}
+
+#pdfTemplate .pdf-infos {
+    border: 1px solid var(--border-default-grey);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 8px 0 14px;
+}
+
+#pdfTemplate .pdf-infos p {
+    margin: 2px 0;
+}
+
+#pdfTemplate .pdf-ecole {
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+#pdfTemplate .pdf-circo {
+    margin-top: 0;
+}
+
+#pdfTemplate .pdf-date {
+    font-style: italic;
+}
+
+#pdfTemplate table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 16px 0;
+}
+
+#pdfTemplate th,
+#pdfTemplate td {
+    border: 1px solid #333;
+    padding: 6px 10px;
+    text-align: center;
+    font-size: 13px;
+    overflow: hidden;
+}
+
+#pdfTemplate th {
+    background: var(--background-alt-blue-france);
+}
+
+#pdfTemplate thead th:first-child {
+    border: none;
+    background: transparent;
+}
+
+#pdfTemplate td:last-child {
+    font-weight: 700;
+}
+
+#pdfTemplate tr.pdf-ulis td {
+    font-style: italic;
+    color: var(--text-mention-grey);
+}
+
+#pdfTemplate tr.pdf-ulis td:last-child {
+    font-weight: 400;
+}
+
+#pdfTemplate .pdf-total {
+    text-align: right;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+/* Impression : seul #pdfTemplate est visible, mis en page pour l'export PDF */
+@page {
+    size: A4 portrait;
+}
+
+@media print {
+    body > *:not(#pdfTemplate) {
+        display: none !important;
+    }
+
+    #pdfTemplate {
+        display: block !important;
+    }
+}
+
+/* Responsive fidelity preserved from original */
+/* ─────────────────────────────────────
+   Layout responsive avec sidebar fixe
+───────────────────────────────────── */
+
+.sidebar-fixed {
+    background: #ffffff;
+    border-right: 1px solid var(--border-default-grey);
+}
+
+.sidebar-content {
+    padding: 2rem 1.5rem;
+}
+
+.sidebar-logo {
+    background: #ffffff;
+    padding: 1.5rem;
+}
+
+.sidebar-logo svg {
+    display: block;
+    width: 150px;
+    height: auto;
+}
+
+.main-content {
+    background: var(--background-default-grey);
+}
+
+.content-container {
+    max-width: 860px;
+}
+
+/* Desktop */
+@media (min-width: 992px) {
+
+    .sidebar-fixed {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        width: 25%;
+        max-width: 390px;
+    }
+
+    .sidebar-logo {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 25%;
+        max-width: 390px;
+        z-index: 10;
+    }
+
+    /* Réserve la place du logo (position fixed) pour qu'il ne recouvre pas
+       le bas du contenu de la sidebar sur les écrans à faible hauteur. */
+    .sidebar-content {
+        padding-bottom: 11rem;
+    }
+
+    .main-content {
+        margin-left: 25%;
+    }
+
+    .content-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Écrans à faible hauteur (ex. 1366×768) : resserrer les espacements et
+   tailles de texte pour limiter le défilement nécessaire. */
+@media (max-height: 800px) {
+    .content-container.py-5 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .sidebar-content {
+        padding-top: 1.25rem;
+    }
+
+    .card-body {
+        padding: 1rem 1.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+        line-height: 1.15;
+        font-weight: 800;
+    }
+
+    .lead {
+        font-size: .95rem;
+    }
+
+    .mb-5 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    .card-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        margin-top: .75rem;
+        font-size: .9rem;
+    }
+
+    .effectif-cell label {
+        font-size: .8rem;
+    }
+
+    .ulis-section {
+        margin-top: .75rem;
+        padding: .75rem;
+        font-size: .9rem;
+    }
+
+    #totauxRecap {
+        margin-top: .75rem !important;
+        font-size: .9rem;
+    }
+
+    .btn {
+        min-height: 2.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Mobile / tablette */
+@media (max-width: 991.98px) {
+
+    .sidebar-fixed {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-default-grey);
+    }
+
+    .sidebar-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+@media (max-width: 576px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .effectif-cell input[type="number"] {
+        font-size: .95rem;
+        padding: .65rem .35rem;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+
+    .lead {
+        font-size: 1rem;
+    }
+}
+</style>
+
+</head>
+<body>
+
+<div id="liveRegion" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div class="container-fluid">
+    <div class="row min-vh-100">
+
+        <!-- Sidebar -->
+        <aside class="col-12 col-lg-5 col-xl-5 sidebar-fixed">
+            <div class="sidebar-content">
+
+                <div class="mb-5 text-center text-lg-start">
+                    <h1 id="pageTitle">Constat rapide de rentrée</h1>
+                    <p id="pageSubtitle" class="lead text-muted mb-0 lh-base"></p>
+                </div>
+
+                <!-- ── Carte : Votre école ── -->
+                <div class="card shadow-sm d-none" id="ecoleCard">
+                    <div class="card-header bg-secondary text-white">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-school me-2" aria-hidden="true"></i>
+                            Votre école
+                        </h2>
+                    </div>
+
+                    <div class="card-body text-center py-3">
+                        <p id="ecole-display" class="mb-0 fs-5">
+                            <span class="loading-spinner" aria-hidden="true"></span>
+                            <span class="visually-hidden">Chargement…</span>
+                        </p>
+                    </div>
+                </div>
+
+                <p id="campagne-info" class="text-muted fst-italic small mt-3 d-none"></p>
+
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="col-12 col-lg-7 col-xl-7 main-content">
+            <div class="container py-4 content-container">
+
+    <!-- Alerte erreur chargement école -->
+    <div id="error-alert" class="alert alert-danger d-none mb-4" role="alert">
+        <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+        <span id="error-message">Une erreur est survenue.</span>
+    </div>
+
+    <!-- ── Carte : Saisie des effectifs ── -->
+    <div class="card shadow-sm d-none" id="formCard">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">
+                <i class="fas fa-users me-2" aria-hidden="true"></i>Nombre d'élèves par niveau
+            </h2>
+        </div>
+        <div class="card-body">
+
+            <form id="effectifsForm" novalidate aria-label="Saisie des effectifs par classe">
+
+                <!-- Sous-groupe 1 : Préélémentaire -->
+                <span class="section-title">En préélémentaire</span>
+
+                <div class="row row-cols-4 g-2 mb-4" id="preelemRow">
+                    <!-- TPS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_TPS">TPS</label>
+                            <input type="number" id="f_TPS" name="TPS" min="0" step="1"
+                                   aria-label="Toute Petite Section" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- PS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_PS">PS</label>
+                            <input type="number" id="f_PS" name="PS" min="0" step="1"
+                                   aria-label="Petite Section" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- MS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_MS">MS</label>
+                            <input type="number" id="f_MS" name="MS" min="0" step="1"
+                                   aria-label="Moyenne Section" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- GS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_GS">GS</label>
+                            <input type="number" id="f_GS" name="GS" min="0" step="1"
+                                   aria-label="Grande Section" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sous-groupe 2 : Élémentaire -->
+                <span class="section-title">En élémentaire</span>
+
+                <div class="row row-cols-3 row-cols-sm-5 g-2 mb-1" id="elemRow">
+                    <!-- CP -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CP">CP</label>
+                            <input type="number" id="f_CP" name="CP" min="0" step="1"
+                                   aria-label="Cours Préparatoire" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CE1 -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CE1">CE1</label>
+                            <input type="number" id="f_CE1" name="CE1" min="0" step="1"
+                                   aria-label="Cours Élémentaire 1" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CE2 -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CE2">CE2</label>
+                            <input type="number" id="f_CE2" name="CE2" min="0" step="1"
+                                   aria-label="Cours Élémentaire 2" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CM1 -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CM1">CM1</label>
+                            <input type="number" id="f_CM1" name="CM1" min="0" step="1"
+                                   aria-label="Cours Moyen 1" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CM2 -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CM2">CM2</label>
+                            <input type="number" id="f_CM2" name="CM2" min="0" step="1"
+                                   aria-label="Cours Moyen 2" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section ULIS – au second plan -->
+                <div class="ulis-section">
+                    <div class="mb-2">
+                        <p class="text-muted fst-italic"><strong>Dont élèves ULIS</strong> inclus dans les effectifs ci-dessus</p>
+                    </div>
+
+                <div class="row row-cols-3 row-cols-sm-5 g-2" id="ulisRow">
+                    <!-- CP ULIS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CP_ULIS">CP</label>
+                            <input type="number" id="f_CP_ULIS" name="CP_ULIS" min="0" step="1"
+                                   aria-label="CP ULIS" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CE1 ULIS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CE1_ULIS">CE1</label>
+                            <input type="number" id="f_CE1_ULIS" name="CE1_ULIS" min="0" step="1"
+                                   aria-label="CE1 ULIS" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CE2 ULIS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CE2_ULIS">CE2</label>
+                            <input type="number" id="f_CE2_ULIS" name="CE2_ULIS" min="0" step="1"
+                                   aria-label="CE2 ULIS" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CM1 ULIS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CM1_ULIS">CM1</label>
+                            <input type="number" id="f_CM1_ULIS" name="CM1_ULIS" min="0" step="1"
+                                   aria-label="CM1 ULIS" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                    <!-- CM2 ULIS -->
+                    <div class="col">
+                        <div class="effectif-cell">
+                            <label for="f_CM2_ULIS">CM2</label>
+                            <input type="number" id="f_CM2_ULIS" name="CM2_ULIS" min="0" step="1"
+                                   aria-label="CM2 ULIS" autocomplete="off" />
+                            <div class="invalid-feedback">Merci de saisir uniquement des nombres.</div>
+                        </div>
+                    </div>
+                </div>
+                </div><!-- /.ulis-section -->
+
+                <!-- Totaux calculés en direct -->
+                <div class="mt-3" id="totauxRecap">
+                    <p class="mb-1">Nombre d'élèves en préélémentaire : <span id="totalPreelem">0</span> élèves</p>
+                    <p class="mb-1">Nombre d'élèves en élémentaire : <span id="totalElem">0</span> élèves</p>
+					<p class="mb-0"><strong>Nombre total d'élèves : <span id="totalGeneral">0</span> élèves</strong></p>
+                    <p class="mb-1 fst-italic text-muted">Dont nombre d'élèves ULIS : <span id="totalUlis">0</span> élèves</p>
+                </div>
+
+                <!-- Erreur validation -->
+                <div id="formErrorBlock" class="alert alert-danger d-none mt-3 mb-0" role="alert" tabindex="-1">
+                    <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                    <span id="formErrorMsg"></span>
+                </div>
+
+                <!-- Erreur soumission -->
+                <div id="submitErrorBlock" class="alert alert-danger d-none mt-3 mb-0" role="alert" tabindex="-1">
+                    <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                    <span id="submitErrorMsg"></span>
+                </div>
+
+                <!-- Bouton -->
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit" disabled>
+                        <span id="btnSpinner" class="spinner-border spinner-border-sm me-2 d-none"
+                              role="status" aria-hidden="true"></span>
+                        <i class="fas fa-paper-plane me-2" id="btnIcon" aria-hidden="true"></i>
+                        <span id="btnLabel">Envoyer les effectifs</span>
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Succès -->
+            <div id="successBlock" class="d-none text-center py-3 mt-2 mb-2"
+                 role="alert" aria-live="assertive" tabindex="-1">
+                <i class="fas fa-check-circle text-success mb-3 d-block"
+                   style="font-size: 2.5rem;" aria-hidden="true"></i>
+                <h3 class="h5 fw-semibold">Effectifs enregistrés</h3>
+                <p class="text-muted mb-3"><strong>Les données ont bien été transmises.</strong></p>
+            </div>
+
+            <div id="successDownload" class="d-none text-center pt-4">
+                <p class="text-muted mb-0">Vous pouvez récupérer les effectifs saisis :</p>
+                <a href="#" id="btnDownloadPdf" class="btn btn-outline-primary mt-3">
+                    <i class="fas fa-file-pdf me-2" aria-hidden="true"></i>Imprimer / Enregistrer en PDF
+                </a>
+                <p class="small fst-italic text-muted mt-4 pt-1 mb-0">Si vous souhaitez recommencer votre saisie, <a href="#" id="restartLink">cliquez ici</a>.</p>
+            </div>
+
+        </div>
+    </div>
+
+            </div>
+        </main>
+
+        <div class="col-12 sidebar-logo" aria-hidden="true">
+            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 119.75 94.33"><defs><style>.cls-1{fill:none;}.cls-2{fill:#1d1e1c;}.cls-3{clip-path:url(#clip-path);}.cls-4{fill:#000091;}.cls-5{fill:#e1000f;}.cls-6{fill:#9c9c9a;}</style><clipPath id="clip-path" transform="translate(0 0)"><rect class="cls-1" x="-48.24" y="-47.87" width="595.28" height="841.89"/></clipPath></defs><title>Ministère-Éducation-Nationale-Jeunesse</title><polygon class="cls-2" points="0.03 18.02 2.34 18.02 4.53 21.74 6.71 18.02 9.03 18.02 9.03 27.07 7.19 27.07 7.19 20.63 5.17 23.96 3.88 23.96 1.86 20.63 1.86 27.07 0.03 27.07 0.03 18.02"/><rect class="cls-2" x="11.55" y="18.02" width="1.84" height="9.05"/><polygon class="cls-2" points="15.91 18.02 18.27 18.02 22.31 24.5 22.31 18.02 24.15 18.02 24.15 27.07 21.8 27.07 17.75 20.57 17.75 27.07 15.91 27.07 15.91 18.02"/><rect class="cls-2" x="26.68" y="18.02" width="1.83" height="9.05"/><g class="cls-3"><path class="cls-2" d="M31.57,24.58a2.6,2.6,0,0,0,2,1.12,1,1,0,0,0,1.16-1.05c0-1.62-4.13-1.26-4.13-4.27a2.7,2.7,0,0,1,2.89-2.62,4,4,0,0,1,3.17,1.52l-1.35,1.21a2.38,2.38,0,0,0-1.81-1.13,1,1,0,0,0-1,.95c0,1.61,4.13,1.24,4.13,4.3a2.76,2.76,0,0,1-3,2.71,4.09,4.09,0,0,1-3.36-1.51Z" transform="translate(0 0)"/><polygon class="cls-2" points="37.52 18.02 44.94 18.02 44.94 19.69 42.15 19.69 42.15 27.07 40.32 27.07 40.32 19.69 37.52 19.69 37.52 18.02"/><path class="cls-2" d="M46.56,18h5.27v1.56H48.39v2.1h2.93v1.56H48.39V25.5h3.44v1.56H46.56Zm.15-2.52H48.6l1.46,1.74H48.38Z" transform="translate(0 0)"/><path class="cls-2" d="M54,18h2.77c2,0,3.22,1,3.22,2.7a2.47,2.47,0,0,1-1.45,2.34l2.84,4H59.15l-2.41-3.65H55.8v3.65H54Zm1.84,1.56v2.26h1a1.13,1.13,0,1,0,0-2.26Z" transform="translate(0 0)"/><polygon class="cls-2" points="62.48 18.02 67.75 18.02 67.75 19.58 64.32 19.58 64.32 21.68 67.24 21.68 67.24 23.24 64.32 23.24 64.32 25.5 67.75 25.5 67.75 27.07 62.48 27.07 62.48 18.02"/><path class="cls-2" d="M0,31.06H3.58a4.53,4.53,0,1,1,0,9.05H0Zm1.83,1.67v5.71H3.61a2.86,2.86,0,1,0,0-5.71Z" transform="translate(0 0)"/><polygon class="cls-2" points="10.16 31.06 15.44 31.06 15.44 32.63 12 32.63 12 34.72 14.92 34.72 14.92 36.28 12 36.28 12 38.55 15.44 38.55 15.44 40.11 10.16 40.11 10.16 31.06"/><polygon class="cls-2" points="20.93 31.06 22.76 31.06 22.76 38.44 26.2 38.44 26.2 40.11 20.93 40.11 20.93 31.06"/><polygon class="cls-2" points="25.82 34.79 26.98 31.06 28.84 31.06 27.34 34.79 25.82 34.79"/><path class="cls-2" d="M30.26,31.06h5.27v1.57H32.1v2.09H35v1.56H32.1v2.27h3.43v1.56H30.26ZM32,30.29l1.46-1.75h1.89l-1.68,1.75Z" transform="translate(0 0)"/><path class="cls-2" d="M37.67,31.06h3.55a4.53,4.53,0,1,1,0,9.05H37.67Zm1.83,1.67v5.71h1.75a2.86,2.86,0,1,0,0-5.71Z" transform="translate(0 0)"/><path class="cls-2" d="M53.14,31.06H55v5.51a3.67,3.67,0,1,1-7.33,0V31.06h1.84v5.66a1.83,1.83,0,1,0,3.66,0Z" transform="translate(0 0)"/><path class="cls-2" d="M63.75,37.41l1.45,1.11a4.66,4.66,0,0,1-3.82,1.85,4.79,4.79,0,1,1,3.82-7.73l-1.45,1.12a2.85,2.85,0,0,0-2.37-1.24,3.07,3.07,0,0,0,0,6.13,2.83,2.83,0,0,0,2.37-1.24" transform="translate(0 0)"/><path class="cls-2" d="M69,31.06h2.4l3.43,9.05h-2L72,37.76H68.4l-.86,2.35h-2Zm2.44,5.13-1.24-3.4L69,36.19Z" transform="translate(0 0)"/><polygon class="cls-2" points="74.4 31.06 81.82 31.06 81.82 32.73 79.03 32.73 79.03 40.11 77.19 40.11 77.19 32.73 74.4 32.73 74.4 31.06"/><rect class="cls-2" x="83.43" y="31.06" width="1.84" height="9.05"/><path class="cls-2" d="M96.63,35.59a4.81,4.81,0,1,1-4.8-4.79,4.7,4.7,0,0,1,4.8,4.79m-1.89,0a2.92,2.92,0,1,0-2.91,3.06,2.91,2.91,0,0,0,2.91-3.06" transform="translate(0 0)"/><polygon class="cls-2" points="98.39 31.06 100.74 31.06 104.78 37.54 104.78 31.06 106.62 31.06 106.62 40.11 104.27 40.11 100.22 33.61 100.22 40.11 98.39 40.11 98.39 31.06"/><polygon class="cls-2" points="0.03 44.11 2.38 44.11 6.43 50.59 6.43 44.11 8.26 44.11 8.26 53.16 5.91 53.16 1.86 46.66 1.86 53.16 0.03 53.16 0.03 44.11"/><path class="cls-2" d="M13.08,44.11h2.41l3.42,9H17l-.87-2.36H12.48l-.87,2.36H9.66Zm2.45,5.13-1.24-3.4L13,49.24Z" transform="translate(0 0)"/><polygon class="cls-2" points="18.47 44.11 25.89 44.11 25.89 45.78 23.1 45.78 23.1 53.16 21.27 53.16 21.27 45.78 18.47 45.78 18.47 44.11"/><rect class="cls-2" x="27.51" y="44.11" width="1.84" height="9.05"/><path class="cls-2" d="M40.7,48.63a4.8,4.8,0,1,1-4.79-4.78,4.69,4.69,0,0,1,4.79,4.78m-1.88,0a2.92,2.92,0,1,0-2.91,3.06,2.91,2.91,0,0,0,2.91-3.06" transform="translate(0 0)"/><polygon class="cls-2" points="42.46 44.11 44.81 44.11 48.86 50.59 48.86 44.11 50.69 44.11 50.69 53.16 48.34 53.16 44.3 46.66 44.3 53.16 42.46 53.16 42.46 44.11"/><path class="cls-2" d="M55.52,44.11h2.4l3.42,9h-2l-.86-2.36H54.91L54,53.16H52.09ZM58,49.24l-1.24-3.4-1.24,3.4Z" transform="translate(0 0)"/><polygon class="cls-2" points="62.74 44.11 64.58 44.11 64.58 51.49 68.01 51.49 68.01 53.16 62.74 53.16 62.74 44.11"/><polygon class="cls-2" points="69.63 44.11 74.9 44.11 74.9 45.67 71.46 45.67 71.46 47.77 74.39 47.77 74.39 49.33 71.46 49.33 71.46 51.59 74.9 51.59 74.9 53.16 69.63 53.16 69.63 44.11"/><polygon class="cls-2" points="0.03 57.16 5.3 57.16 5.3 58.72 1.86 58.72 1.86 60.81 4.79 60.81 4.79 62.38 1.86 62.38 1.86 64.64 5.3 64.64 5.3 66.2 0.03 66.2 0.03 57.16"/><polygon class="cls-2" points="6.7 57.16 14.12 57.16 14.12 58.82 11.33 58.82 11.33 66.2 9.49 66.2 9.49 58.82 6.7 58.82 6.7 57.16"/><path class="cls-2" d="M19.09,57.15h3.56a4.53,4.53,0,1,1,0,9.05H19.09Zm1.84,1.67v5.71h1.74a2.86,2.86,0,1,0,0-5.71Z" transform="translate(0 0)"/><polygon class="cls-2" points="29.23 57.16 34.5 57.16 34.5 58.72 31.06 58.72 31.06 60.81 33.98 60.81 33.98 62.38 31.06 62.38 31.06 64.64 34.5 64.64 34.5 66.2 29.23 66.2 29.23 57.16"/><polygon class="cls-2" points="39.99 57.16 41.83 57.16 41.83 64.53 45.27 64.53 45.27 66.2 39.99 66.2 39.99 57.16"/><path class="cls-2" d="M49.56,57.15H52l3.43,9.05h-2l-.86-2.35H49l-.87,2.35H46.13ZM52,62.28l-1.24-3.39-1.24,3.39Z" transform="translate(0 0)"/><path class="cls-2" d="M59.3,68.45a3,3,0,0,1-.72,0V66.78a2.07,2.07,0,0,0,.46,0c.82,0,1.24-.35,1.24-1.28V57.15h1.84v8.3c0,2-.93,3-2.82,3" transform="translate(0 0)"/><polygon class="cls-2" points="64.65 57.16 69.92 57.16 69.92 58.72 66.49 58.72 66.49 60.81 69.41 60.81 69.41 62.38 66.49 62.38 66.49 64.64 69.92 64.64 69.92 66.2 64.65 66.2 64.65 57.16"/><path class="cls-2" d="M77.34,57.15h1.84v5.51a3.67,3.67,0,1,1-7.33,0V57.15h1.84v5.66a1.83,1.83,0,1,0,3.65,0Z" transform="translate(0 0)"/><polygon class="cls-2" points="81.45 57.16 83.81 57.16 87.85 63.63 87.85 57.16 89.69 57.16 89.69 66.2 87.34 66.2 83.29 59.7 83.29 66.2 81.45 66.2 81.45 57.16"/><polygon class="cls-2" points="92.22 57.16 97.49 57.16 97.49 58.72 94.06 58.72 94.06 60.81 96.98 60.81 96.98 62.38 94.06 62.38 94.06 64.64 97.49 64.64 97.49 66.2 92.22 66.2 92.22 57.16"/><path class="cls-2" d="M100.14,63.72a2.62,2.62,0,0,0,2,1.11,1,1,0,0,0,1.16-1c0-1.61-4.14-1.25-4.14-4.26a2.7,2.7,0,0,1,2.9-2.62,4,4,0,0,1,3.17,1.52l-1.35,1.2a2.39,2.39,0,0,0-1.81-1.12,1,1,0,0,0-1,.94c0,1.62,4.13,1.24,4.13,4.31a2.76,2.76,0,0,1-3,2.71A4.1,4.1,0,0,1,98.81,65Z" transform="translate(0 0)"/><path class="cls-2" d="M107.52,63.72a2.62,2.62,0,0,0,2,1.11,1,1,0,0,0,1.16-1c0-1.61-4.14-1.25-4.14-4.26a2.7,2.7,0,0,1,2.9-2.62,4,4,0,0,1,3.17,1.52l-1.35,1.2a2.39,2.39,0,0,0-1.81-1.12,1,1,0,0,0-1,.94c0,1.62,4.13,1.24,4.13,4.31a2.76,2.76,0,0,1-3,2.71A4.1,4.1,0,0,1,106.19,65Z" transform="translate(0 0)"/><polygon class="cls-2" points="114.48 57.16 119.75 57.16 119.75 58.72 116.31 58.72 116.31 60.81 119.23 60.81 119.23 62.38 116.31 62.38 116.31 64.64 119.75 64.64 119.75 66.2 114.48 66.2 114.48 57.16"/><path class="cls-2" d="M29.47,91.21c.24,0,.46.18.35.66l-1.15.26c.2-.53.53-.92.8-.92m.63,1.84h-.23a1.38,1.38,0,0,1-.89.6c-.31,0-.47-.19-.47-.6a2.76,2.76,0,0,1,0-.51l1.84-.6c.36-.85-.07-1.22-.58-1.22C29,90.72,28,92.17,28,93.44c0,.57.28.89.7.89s1-.49,1.44-1.28m-.36-2.67L31,89.17V89h-.7l-.79,1.35Zm-4,.85h.61l-1,2.65a.31.31,0,0,0,.27.45A2.26,2.26,0,0,0,27.43,93h-.18a2.41,2.41,0,0,1-1.12.68L27,91.23h.91l.11-.38h-.88l.34-.95h-.35l-.63.95-.75.11ZM25,91.1a.27.27,0,0,0-.22-.38,1.73,1.73,0,0,0-1.42,1.15h.18a1.34,1.34,0,0,1,.73-.57l-1,2.64a.27.27,0,0,0,.22.39,1.68,1.68,0,0,0,1.34-1.15H24.6a1.32,1.32,0,0,1-.73.56Zm.18-1.32a.44.44,0,1,0-.44-.44.44.44,0,0,0,.44.44m-5.84,4.06c-.13.29,0,.49.3.49a.29.29,0,0,0,.33-.24l.7-1.87a2.62,2.62,0,0,1,1.26-.82c.19,0,.17.16,0,.4l-1.08,2.08a.3.3,0,0,0,.27.45,1.71,1.71,0,0,0,1.41-1.15h-.17a1.38,1.38,0,0,1-.74.56l.93-1.87a1.53,1.53,0,0,0,.18-.65.46.46,0,0,0-.49-.5c-.46,0-.92.52-1.48,1.15v-.49c0-.35-.11-.66-.43-.66s-.39.17-.57.42v.06c.35,0,.5.5.25,1Zm0-2.31c.12-.43,0-.81-.28-.81s-.49.3-.89,1.15v-.49c0-.35-.11-.66-.43-.66s-.71.58-1,1.15h.18c.18-.26.34-.42.48-.42s.24.25,0,.79l-.72,1.6c-.13.29,0,.49.3.49a.29.29,0,0,0,.33-.24l.7-1.87c.2-.24.38-.45.61-.69Zm-4.08-.32c.25,0,.46.18.35.66l-1.14.26c.2-.53.53-.92.79-.92m.63,1.84h-.22a1.4,1.4,0,0,1-.9.6c-.31,0-.47-.19-.47-.6a2.76,2.76,0,0,1,0-.51l1.84-.6c.36-.85-.07-1.22-.58-1.22-.87,0-1.85,1.45-1.85,2.72,0,.57.27.89.69.89s1-.49,1.44-1.28M11.5,91.23h.61l-1,2.65a.31.31,0,0,0,.27.45A2.26,2.26,0,0,0,13.16,93H13a2.51,2.51,0,0,1-1.12.68l.88-2.49h.91l.12-.38h-.89l.34-.95h-.35l-.63.95L11.5,91ZM8.15,93.29c0-.81.91-1.92,1.42-1.92a1,1,0,0,1,.31,0l-.53,1.41c-.3.37-.77.82-1,.82s-.21-.1-.21-.35m2.79-2.72-.27,0-.32.3h-.06a3.2,3.2,0,0,0-2.82,2.93.5.5,0,0,0,.54.55c.39,0,.78-.56,1.21-1.16l0,.21c0,.61.13,1,.45,1s.71-.58,1-1.15h-.17c-.18.26-.35.41-.48.41s-.24-.25,0-.79Zm-3.22,1c.13-.43.06-.81-.27-.81S7,91,6.56,91.87v-.49c0-.35-.11-.66-.43-.66s-.71.58-1,1.15h.17c.18-.26.35-.42.48-.42s.25.25,0,.79l-.72,1.6c-.13.29,0,.49.3.49a.29.29,0,0,0,.33-.24l.71-1.87c.2-.24.38-.45.6-.69ZM2.64,94.19l.07-.2c-.89-.17-1-.17-.65-1.13l.36-1h1c.43,0,.44.18.37.66H4l.58-1.6H4.36c-.22.38-.39.66-.87.66h-1L3,90.19c.16-.45.25-.54.85-.54h.42c.62,0,.69.17.69.79h.25l.2-1.09H1.79l-.07.21c.71.14.78.21.45,1.12l-.8,2.18C1,93.77.9,93.84.09,94l-.06.2Z" transform="translate(0 0)"/><path class="cls-2" d="M20.59,82.92c.24,0,.46.18.34.65l-1.14.27c.2-.53.53-.92.8-.92m.63,1.84H21a1.38,1.38,0,0,1-.89.6c-.31,0-.47-.19-.47-.6a2.76,2.76,0,0,1,.05-.51l1.84-.6c.36-.85-.08-1.22-.58-1.22-.87,0-1.86,1.45-1.86,2.72,0,.57.27.89.7.89s1-.49,1.44-1.28m-.37-2.67,1.3-1.21v-.14h-.7l-.8,1.35Zm-4,.85h.61l-1,2.64a.31.31,0,0,0,.26.46,2.29,2.29,0,0,0,1.76-1.29h-.18a2.41,2.41,0,0,1-1.12.68l.89-2.49h.91l.11-.38h-.88l.34-1h-.35l-.63,1-.75.11Zm-.83-.13a.27.27,0,0,0-.21-.38,1.69,1.69,0,0,0-1.42,1.14h.17a1.43,1.43,0,0,1,.74-.56l-1,2.64a.26.26,0,0,0,.21.39,1.68,1.68,0,0,0,1.35-1.15h-.17a1.35,1.35,0,0,1-.74.56Zm.19-1.32a.44.44,0,1,0-.44-.44.44.44,0,0,0,.44.44m-3.53,4,1.85-4.85-.06-.07-1.16.13v.14l.23.17c.2.16.14.32-.05.81l-1.45,3.8a.32.32,0,0,0,.27.46,1.65,1.65,0,0,0,1.35-1.15h-.18a1.48,1.48,0,0,1-.8.56M9.21,85c0-.82.9-1.92,1.42-1.92a1.06,1.06,0,0,1,.31,0l-.53,1.41c-.31.37-.78.82-1,.82s-.2-.1-.2-.35M12,82.27l-.28,0-.31.31h-.07a3.2,3.2,0,0,0-2.82,2.93.5.5,0,0,0,.55.55c.39,0,.77-.56,1.2-1.16l0,.21c-.05.61.14,1,.45,1s.71-.58,1-1.15H11.5c-.18.26-.34.41-.48.41s-.24-.25,0-.79ZM5.25,86.68c0-.35.33-.57.82-.76a7.45,7.45,0,0,0,.71.27c.51.16.7.23.7.38,0,.33-.55.57-1.3.57s-.93-.13-.93-.46m1.37-2.14c-.22,0-.31-.19-.31-.4,0-.59.32-1.46.82-1.46.22,0,.3.18.3.4,0,.59-.31,1.46-.81,1.46m1.44,1.81c0-.42-.38-.57-1-.76s-.77-.21-.77-.38.12-.3.34-.42A1.55,1.55,0,0,0,8.06,83.3.8.8,0,0,0,8,82.94h.74l.11-.38H7.67a.85.85,0,0,0-.47-.13,1.54,1.54,0,0,0-1.52,1.46.85.85,0,0,0,.71.88c-.43.2-.67.42-.67.69a.42.42,0,0,0,.18.36c-1,.29-1.39.62-1.39,1.09s.6.65,1.32.65c1.21,0,2.23-.66,2.23-1.21M3.42,83.51c.44,0,.45.18.38.66h.25l.59-1.6H4.38c-.22.38-.39.66-.86.66h-1L3,81.9c.16-.45.25-.53.85-.53h.42c.62,0,.69.16.69.78h.25l.2-1.09H1.79l-.07.21c.71.14.78.21.45,1.12l-.8,2.18C1,85.48.9,85.55.09,85.7L0,85.9H4.1l.73-1.15H4.55a2.68,2.68,0,0,1-1.87.85c-1.08,0-1,0-.62-1l.39-1.06ZM4,80.74l1.3-.89v-.14H4.46l-.71,1Z" transform="translate(0 0)"/><path class="cls-2" d="M20.16,74.63c.24,0,.45.18.34.65l-1.14.27c.2-.53.53-.92.8-.92m.63,1.83h-.23a1.37,1.37,0,0,1-.89.61c-.32,0-.48-.19-.48-.61a2.07,2.07,0,0,1,.06-.5l1.84-.6c.35-.85-.08-1.22-.58-1.22-.87,0-1.86,1.45-1.86,2.72,0,.57.27.88.7.88s1-.48,1.44-1.28m-.37-2.66,1.29-1.21v-.14H21l-.8,1.35Zm-3.8.85h.49l-1,2.64a.3.3,0,0,0,.26.45,2.25,2.25,0,0,0,1.75-1.28H18a2.36,2.36,0,0,1-1.12.67l.89-2.48h.91l.11-.38h-.88l.34-1h-.35l-.63,1-.63.1Zm-.48.29c.13-.43.06-.8-.27-.8s-.49.29-.89,1.15V74.8c0-.35-.11-.66-.43-.66s-.71.57-1,1.14h.17c.18-.26.35-.41.48-.41s.25.25,0,.79l-.71,1.59c-.14.3,0,.49.3.49a.3.3,0,0,0,.33-.23l.7-1.87c.2-.24.38-.46.6-.7Zm-4.07-.31c.25,0,.46.18.35.65l-1.14.27c.19-.53.53-.92.79-.92m.63,1.83h-.22a1.38,1.38,0,0,1-.9.61c-.31,0-.47-.19-.47-.61a2.73,2.73,0,0,1,.05-.5l1.84-.6c.36-.85-.07-1.22-.58-1.22-.87,0-1.85,1.45-1.85,2.72,0,.57.27.88.69.88s1-.48,1.44-1.28m-4.5.75c-.18,0-.44-.17-.44-.32a4.11,4.11,0,0,1,.18-.51l.3-.79c.32-.37.8-.78,1.07-.78s.29.11.29.35c0,.73-.67,2-1.4,2m2.09-2.34c0-.54-.2-.73-.57-.73s-.91.49-1.34,1.08l1.1-2.91-.06-.07-1.16.13v.14l.23.17c.2.16.14.33-.05.8L7.25,76.56a3,3,0,0,0-.19.57c0,.31.43.61.82.61.9,0,2.41-1.62,2.41-2.87m-3.61-.35c.07-.25-.09-.38-.22-.38a1.69,1.69,0,0,0-1.41,1.14h.17A1.36,1.36,0,0,1,6,74.72l-1,2.64a.26.26,0,0,0,.22.38A1.69,1.69,0,0,0,6.51,76.6H6.33a1.37,1.37,0,0,1-.73.56Zm.18-1.33a.44.44,0,0,0,.44-.43.44.44,0,0,0-.44-.44.44.44,0,0,0-.43.44.43.43,0,0,0,.43.43m-2.67-.42H1.78l-.07.2c.71.15.78.22.44,1.13l-.78,2.18c-.33.91-.47,1-1.28,1.13l-.07.2H3.7l.8-1.42H4.22a2.53,2.53,0,0,1-1.8,1.12c-.62,0-.69-.1-.36-1l.78-2.18c.33-.91.48-1,1.29-1.13Z" transform="translate(0 0)"/><path class="cls-4" d="M13.66,10.59c.13-.12.26-.26.39-.4h0a6.91,6.91,0,0,1,.76-.77,2,2,0,0,1,.25-.2s0-.07,0-.09-.18.13-.29.18-.05,0,0-.05L15,9.08h0s0,0,0,0c-.3,0-.52.16-.73.34,0,0-.09,0-.11,0-.34.12-.59.41-.93.55V9.85a3.47,3.47,0,0,1-.41.16,2.23,2.23,0,0,1-.57,0,5.86,5.86,0,0,0-.82.14h0a1.85,1.85,0,0,0-.42.17h0l0,0a.61.61,0,0,1-.15.13,2.18,2.18,0,0,0-.38.3h0L10,11.2H9.91v0l.06-.09.07-.11a1.13,1.13,0,0,1,.1-.13s0,0,0,0l0,0a2.47,2.47,0,0,1,.38-.28h0s0,0,0,0a.21.21,0,0,1,0-.06v0l-.11.08c-.05,0-.1.15-.18.14h0v0h0l0,0v0l0-.05v0l0-.05s0,0,0,0a.51.51,0,0,1,.16-.13h0c.09,0,.17-.1.26-.15l0,0a1.22,1.22,0,0,0-.36.18l0,0a.06.06,0,0,1-.06,0v0s.09-.07.13-.11,0,0,0,0c.73-.57,1.72-.43,2.56-.73l.21-.13c.11-.05.2-.16.34-.23a.92.92,0,0,0,.38-.52.12.12,0,0,0,0-.05,3.28,3.28,0,0,1-1,.75,4.28,4.28,0,0,1-1.49.28s.06,0,.11,0,0-.09.09-.14h.07s0,0,0,0,.12,0,.09,0-.2.06-.31,0c0,0,0-.12.06-.14h.1a.19.19,0,0,1,0-.09c.34-.2.66-.36,1-.55-.07,0-.12.07-.19,0s0-.07.05-.07c.25-.07.45-.21.7-.3-.09,0-.16.07-.25,0s.07-.06.14-.06V8s0,0,0,0a.08.08,0,0,1,0,0s.09,0,.14-.07-.07,0-.07,0a.5.5,0,0,1,.29-.14s-.09,0-.09,0,0,0,.05,0h-.05s0-.07,0-.09a1.41,1.41,0,0,0,.2-.55s0,0,0,0a1.86,1.86,0,0,1-.93.43H12.5a.43.43,0,0,1-.38,0c-.09-.05-.14-.12-.23-.18a2.32,2.32,0,0,0-.57-.28,5.13,5.13,0,0,0-1.74-.25,4.2,4.2,0,0,1,.79-.22,3.33,3.33,0,0,1,1.16-.23.89.89,0,0,0-.23,0,3.73,3.73,0,0,0-1,.14c-.23,0-.44.13-.66.18s-.21.18-.37.16V6.61A1.31,1.31,0,0,1,10.17,6a4,4,0,0,1,1.2,0,6.19,6.19,0,0,1,.86.15c.12,0,.14.19.23.21s.27,0,.41.09,0-.09,0-.14.2,0,.29,0-.16-.32-.25-.48,0,0,0,0a2.35,2.35,0,0,0,.54.45c.11.05.39.12.34,0a3.62,3.62,0,0,0-.52-.68V5.52c-.05,0-.05,0-.07,0V5.38c-.09,0-.07-.13-.11-.2s0-.28-.07-.41A1.83,1.83,0,0,1,13,4.38c-.07-.38-.16-.72-.21-1.09a2.09,2.09,0,0,1,.46-1.15,1.92,1.92,0,0,1,.63-.73,2,2,0,0,1,.44-.73A1.9,1.9,0,0,1,15,.23a5.87,5.87,0,0,1,.6-.23H0V12H11a9.53,9.53,0,0,1,1.47-.75,5.56,5.56,0,0,0,1.16-.67M10.17,9c-.05,0-.14,0-.12,0s.18-.12.28-.16.11-.07.15,0,.12,0,.16.09c-.13.14-.31.07-.47.14m-3.48-.5a.08.08,0,0,1,0-.05A7.15,7.15,0,0,0,7.4,7.27a3.13,3.13,0,0,0,.77-.64,4.45,4.45,0,0,1,1.27-1,.92.92,0,0,1,.59,0c-.07.1-.18.07-.27.14a.08.08,0,0,1-.07,0,.1.1,0,0,0,0-.07c-.22.25-.54.36-.72.66s-.23.52-.53.59c-.09,0,0-.07,0,0A7.91,7.91,0,0,0,6.69,8.47M8.58,7s-.05,0-.07.09a.16.16,0,0,1-.09.09s-.05,0-.05,0a.27.27,0,0,1,.19-.2s0,0,0,0m1.05,3.4a.18.18,0,0,1-.05.07s0,0,0,0a.52.52,0,0,1-.18.12h0l-.09.08s-.15,0-.11,0l.17-.16.09-.09,0-.05s.14,0,.12,0m-.41-.19h0L9,10.36l-.3.15h0a1,1,0,0,0-.23.18l0,0h0s0,0,0,0h0l-.05,0,0,0s-.05,0-.05,0h0l0,0,0,0h0L8,10.92a.86.86,0,0,0-.13.14h0l0,0h0v0h0v0h0v0L7.84,11h0l0,0,0,0v0L8,10.77H8s0,0,0-.05l0,0h0s0,0,0-.05h0v0h0v0a.47.47,0,0,1,.09-.12h0l-.09.07s-.07,0,0,0l.06-.05h0a1.31,1.31,0,0,1,.11-.12l.07-.05h0l0-.06h0c.21-.21.58-.2.87-.33.11,0,.25,0,.36,0a.36.36,0,0,1,.2,0c-.2.11-.39.24-.58.35m.47-1.57s.07,0,.09,0H9.6s0,0,0,0l-.37.09c-.16,0-.29.16-.47.2S8.28,9.1,8,9.2c0,0,0,0,0,0s.11-.09.16-.16,0,0,0,0a4.1,4.1,0,0,1,.66-.59V8.29C8.85,8.2,9,8.15,9,8a.4.4,0,0,1,.23-.21s-.07,0-.07-.06-.18,0-.27,0A.39.39,0,0,1,9,7.66a.05.05,0,0,1,0,0s0-.1.11-.11a.78.78,0,0,0,.27-.09c-.16,0-.34,0-.5,0a1.21,1.21,0,0,1,.57-.68s.07,0,.07,0A.23.23,0,0,1,9.33,7a2.12,2.12,0,0,1,.54.13s-.07,0-.09,0,.25,0,.36.11c-.06.07-.13,0-.2,0A6,6,0,0,1,12,8a6.55,6.55,0,0,1-1.56.48.42.42,0,0,1-.19,0s0,.07,0,.07a.32.32,0,0,0-.22,0,.32.32,0,0,1-.3,0" transform="translate(0 0)"/><path class="cls-5" d="M33,0H20.11s0,0,.12.06l.33.17A1.08,1.08,0,0,1,21,.59c.05.07.12.21.07.3s-.07.29-.18.34a.78.78,0,0,1-.48,0,1.26,1.26,0,0,1-.27,0,1.81,1.81,0,0,1,.89.61s.11.07.2.07,0,0,0,.07-.09.07-.06.13h.06c.12,0,.09-.27.25-.2a.26.26,0,0,1,.1.34l-.28.23a.22.22,0,0,0,0,.16.8.8,0,0,1,.12.27c.06.16.09.34.16.5a3,3,0,0,1,.15,1c0,.18-.09.34,0,.52a2.19,2.19,0,0,0,.25.48,3.9,3.9,0,0,1,.25.36c.14.23.39.46.27.73s-.31.13-.47.23,0,.29,0,.4-.13.34-.29.41c0,.07.13.05.16.09s.13.18.06.3-.36.2-.22.41a.59.59,0,0,1,0,.5.56.56,0,0,1-.41.34,1,1,0,0,1-.43,0,.35.35,0,0,0-.13-.05A11.54,11.54,0,0,0,19.61,9a1.5,1.5,0,0,0-.32.1,1.55,1.55,0,0,0-.27.24h0l0,.06,0,0,0,0a2.11,2.11,0,0,0-.18.27h0s0,0,0,0a2.09,2.09,0,0,0-.17.41,1.35,1.35,0,0,0,0,1.08s.75.25,1.25.47l.54.27H33Z" transform="translate(0 0)"/><path class="cls-6" d="M20.88,4.38c.09,0,.23,0,.23.07s-.32.23-.46.41h-.06c-.07,0-.05.16-.12.16a.28.28,0,0,0-.2,0,.4.4,0,0,0,.34.14.1.1,0,0,1,.07.09s0,0,0,0,.05,0,.05,0v.09c-.07.09-.18,0-.28.07a1.18,1.18,0,0,0,.53,0c.13,0,0-.28.09-.39s0-.07-.05-.07.09-.11.14-.13a.21.21,0,0,0,.14-.07s-.1-.07-.07-.12.25-.22.2-.36-.2-.07-.32-.11a.71.71,0,0,0-.38,0,1.89,1.89,0,0,0-.34.09,1.61,1.61,0,0,0-.43.23,3.15,3.15,0,0,1,.49-.14,1.7,1.7,0,0,1,.39,0" transform="translate(0 0)"/></g></svg>
+        </div>
+
+    </div>
+</div>
+</div><!-- /.container -->
+
+<!-- Zone lecteurs d'écran -->
+<div id="liveRegion" role="status" aria-live="polite" aria-atomic="true"
+     style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;"></div>
+
+<!-- Gabarit imprimé pour générer le PDF (masqué à l'écran, affiché uniquement via @media print) -->
+<div id="pdfTemplate" aria-hidden="true"></div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// ⚙️  CONFIGURATION — À PERSONNALISER
+// ══════════════════════════════════════════════════════════════
+const CONFIG = {
+    // Récupération des infos école à partir de l'UUID
+    webhookFetch:  'https://n8n.incubateur.education.gouv.fr/webhook/32a6f3ca-7e84-450c-bed8-99ac52cf79ff',
+
+    // Envoi des effectifs saisis
+    // Les champs laissés vides ne sont PAS inclus dans le payload.
+    webhookSubmit: 'https://n8n.incubateur.education.gouv.fr/webhook/8ce18bbf-0123-4a11-a0ff-dda673441b25',
+
+    // Données pour l'export .pdf
+    webhookPdfData: 'https://n8n.incubateur.education.gouv.fr/webhook/a3f024ed-9322-4259-80c3-9160c8345ac8',
+};
+// ══════════════════════════════════════════════════════════════
+
+const $ = id => document.getElementById(id);
+const liveRegion = $("liveRegion");
+
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+}
+
+function announce(msg) {
+    liveRegion.textContent = "";
+    requestAnimationFrame(() => { liveRegion.textContent = msg; });
+}
+
+// ── Données école (pour les inclure dans le payload) ──
+let ecoleData = {};
+
+// ── Export .pdf (généré côté client à partir de l'état actuel de la table) ──
+async function fetchPdfData(uuid) {
+    const res = await fetch(CONFIG.webhookPdfData, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uuid }),
+    });
+    if (!res.ok) throw new Error(`Erreur serveur (HTTP ${res.status}).`);
+    return await res.json();
+}
+
+const PDF_COLGROUP = `
+    <colgroup>
+        <col style="width:14%"><col style="width:12%"><col style="width:12%">
+        <col style="width:12%"><col style="width:12%"><col style="width:12%">
+        <col style="width:26%">
+    </colgroup>
+`;
+
+function buildPdfHtml(row) {
+    // Filet de sécurité si le webhook renvoie encore d'anciens noms de champs.
+    const uai     = (row.uai || row.UAI || '').toUpperCase();
+    const sigle   = row.sigle   || row.UAI_ecole_sigle   || row.uai_ecole_sigle   || '';
+    const commune = row.commune || row.UAI_ecole_commune || row.uai_ecole_commune || '';
+    const nomEcole = escapeHtml([sigle, row.ecole_nom].filter(Boolean).join(' '));
+    const rentree = escapeHtml(row.rentree || '');
+    const communeEsc = escapeHtml(commune);
+    const uaiEsc = escapeHtml(uai);
+    const circonscription = escapeHtml(row.circonscription || '');
+    const dateFormatee = escapeHtml(row.Date_formatee || '');
+
+    return `
+        <h1>Constat rapide de rentrée ${rentree}</h1>
+        <div class="pdf-infos">
+            <p class="pdf-ecole">${nomEcole}, ${communeEsc} (${uaiEsc})</p>
+            <p class="pdf-circo">Circonscription : ${circonscription}</p>
+            <p class="pdf-date">Etat en date du ${dateFormatee}</p>
+        </div>
+        <h2>Nombre d'élèves en préélémentaire</h2>
+        <table>
+            ${PDF_COLGROUP}
+            <thead>
+                <tr><th></th><th>TPS</th><th>PS</th><th>MS</th><th>GS</th><th></th><th>Sous-total Préélém</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total</td>
+                    <td>${row.TPS ?? 0}</td><td>${row.PS ?? 0}</td><td>${row.MS ?? 0}</td><td>${row.GS ?? 0}</td><td></td>
+                    <td>${row.Total_Preelem ?? 0}</td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Nombre d'élèves en élémentaire</h2>
+        <table>
+            ${PDF_COLGROUP}
+            <thead>
+                <tr><th></th><th>CP</th><th>CE1</th><th>CE2</th><th>CM1</th><th>CM2</th><th>Sous-total Élém</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total</td>
+                    <td>${row.CP ?? 0}</td><td>${row.CE1 ?? 0}</td><td>${row.CE2 ?? 0}</td><td>${row.CM1 ?? 0}</td><td>${row.CM2 ?? 0}</td>
+                    <td>${row.Total_Elem ?? 0}</td>
+                </tr>
+                <tr class="pdf-ulis">
+                    <td>Dont ULIS</td>
+                    <td>${row.CP_ULIS ?? 0}</td><td>${row.CE1_ULIS ?? 0}</td><td>${row.CE2_ULIS ?? 0}</td><td>${row.CM1_ULIS ?? 0}</td><td>${row.CM2_ULIS ?? 0}</td>
+                    <td>${row.Total_ULIS ?? 0}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="pdf-total">Total : ${row.Total_Eleves ?? 0} élèves</p>
+    `;
+}
+
+async function printEffectifsPdf(uuid) {
+    const row = await fetchPdfData(uuid);
+    $('pdfTemplate').innerHTML = buildPdfHtml(row);
+
+    // #pdfTemplate n'est affiché qu'en impression (@media print) : texte natif
+    // sélectionnable, police Marianne déjà chargée par le CSS de la page.
+    window.print();
+}
+
+$('btnDownloadPdf').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const btn = $('btnDownloadPdf');
+    const originalLabel = btn.innerHTML;
+    btn.classList.add('disabled');
+    btn.setAttribute('aria-disabled', 'true');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Préparation…';
+
+    try {
+        await printEffectifsPdf(getUUID());
+    } catch (err) {
+        announce("Erreur lors de la préparation du document : " + err.message);
+    } finally {
+        btn.classList.remove('disabled');
+        btn.removeAttribute('aria-disabled');
+        btn.innerHTML = originalLabel;
+    }
+});
+
+$('restartLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.reload();
+});
+
+// ── 1. Récupération UUID + appel webhook école ──────────────
+function getUUID() {
+    return new URLSearchParams(window.location.search).get('uuid');
+}
+
+function getSource() {
+    return new URLSearchParams(window.location.search).get('source') || '';
+}
+
+// Convertit un timestamp (secondes) en date/heure lisible, fuseau Europe/Paris
+function formatDateHeure(ts) {
+    if (!ts) return '';
+    const date = new Date(ts * 1000);
+    if (isNaN(date)) return String(ts);
+    const datePart = new Intl.DateTimeFormat('fr-FR', {
+        timeZone: 'Europe/Paris', day: 'numeric', month: 'long', year: 'numeric',
+    }).format(date);
+    const timePart = new Intl.DateTimeFormat('fr-FR', {
+        timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit',
+    }).format(date).replace(':', 'h');
+    return `${datePart} à ${timePart}`;
+}
+
+async function fetchEcoleData(uuid) {
+    const res = await fetch(CONFIG.webhookFetch, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uuid }),
+    });
+    if (!res.ok) throw new Error(`Erreur HTTP : ${res.status} - ${res.statusText}`);
+    return await res.json();
+}
+
+function applyCampagneInfo(data) {
+    if (data.Titre) $('pageTitle').textContent = data.Titre;
+
+    if (data.Sous_titre) {
+        const subtitle = $('pageSubtitle');
+        subtitle.textContent = '';
+        subtitle.appendChild(document.createTextNode(data.Sous_titre));
+        subtitle.appendChild(document.createElement('br'));
+        subtitle.appendChild(document.createTextNode('Tarn-et-Garonne'));
+    }
+}
+
+function displayEcoleData(data) {
+    const uai    = (data.uai    || data.UAI    || '').toUpperCase();
+    const commune= data.Commune || data.UAI_ecole_commune || data.uai_ecole_commune || '';
+    const sigle  = data.Sigle   || data.UAI_ecole_sigle   || data.uai_ecole_sigle   || '';
+
+    const target = $('ecole-display');
+    target.textContent = '';
+
+    if (!sigle && !commune && !uai) {
+        const em = document.createElement('em');
+        em.className = 'text-muted';
+        em.textContent = "Merci d'utiliser un lien de saisie valide.";
+        target.appendChild(em);
+        return;
+    }
+
+    if (sigle) target.appendChild(document.createTextNode(sigle));
+    if (commune) {
+        if (sigle) target.appendChild(document.createTextNode(' '));
+        const span = document.createElement('span');
+        span.textContent = `(${commune})`;
+        target.appendChild(span);
+    }
+    if (uai) {
+        target.appendChild(document.createTextNode(' '));
+        const small = document.createElement('small');
+        small.className = 'text-muted';
+        small.style.fontSize = '0.8em';
+        small.style.fontWeight = '400';
+        small.textContent = uai;
+        target.appendChild(small);
+    }
+}
+
+function showLoadError(msg, redText = false) {
+    $('ecole-display').innerHTML = '<span class="text-danger">—</span>';
+    $('error-message').textContent = msg;
+    $('error-message').style.color = redText ? 'var(--error-425)' : '';
+    $('error-alert').classList.remove('d-none');
+    $('ecoleCard').classList.add('d-none');
+    $('formCard').classList.add('d-none');
+}
+
+function showInvalidLink() {
+    applyCampagneInfo({ Titre: 'Formulaire de saisie', Sous_titre: 'Problème de connexion' });
+    showLoadError("Votre lien de connexion n'est pas valide.");
+}
+
+// ── 2. Validation champ ──────────────────────────────────────
+// Chaque champ ULIS doit rester ≤ à l'effectif du niveau correspondant.
+const ULIS_LEVEL_MAP = {
+    f_CP_ULIS:  'f_CP',
+    f_CE1_ULIS: 'f_CE1',
+    f_CE2_ULIS: 'f_CE2',
+    f_CM1_ULIS: 'f_CM1',
+    f_CM2_ULIS: 'f_CM2',
+};
+const LEVEL_ULIS_MAP = Object.fromEntries(
+    Object.entries(ULIS_LEVEL_MAP).map(([ulisId, levelId]) => [levelId, ulisId])
+);
+
+function setFieldError(input, message) {
+    input.classList.add("is-invalid");
+    const feedback = input.parentElement.querySelector('.invalid-feedback');
+    if (feedback) feedback.textContent = message;
+}
+
+function clearFieldError(input) {
+    input.classList.remove("is-invalid");
+}
+
+function validateField(input) {
+    const val = input.value.trim();
+    // Vide = autorisé (on n'enverra pas ce champ)
+    if (val === "") {
+        clearFieldError(input);
+        return true;
+    }
+
+    if (!/^\d+$/.test(val)) {
+        setFieldError(input, "Merci de saisir uniquement des nombres.");
+        return false;
+    }
+
+    const levelId = ULIS_LEVEL_MAP[input.id];
+    if (levelId) {
+        const levelVal = parseInt($(levelId).value.trim() || "0", 10);
+        if (parseInt(val, 10) > levelVal) {
+            setFieldError(input, "Ne peut pas dépasser l'effectif du niveau correspondant.");
+            return false;
+        }
+    }
+
+    clearFieldError(input);
+    return true;
+}
+
+// ── Totaux calculés en direct ─────────────────────────────────
+const PREELEM_IDS = ['f_TPS', 'f_PS', 'f_MS', 'f_GS'];
+const ELEM_IDS = ['f_CP', 'f_CE1', 'f_CE2', 'f_CM1', 'f_CM2'];
+const ULIS_IDS = Object.keys(ULIS_LEVEL_MAP);
+
+function sumFields(ids) {
+    return ids.reduce((sum, id) => {
+        const val = parseInt($(id).value.trim(), 10);
+        return sum + (Number.isNaN(val) ? 0 : val);
+    }, 0);
+}
+
+function updateTotaux() {
+    const totalPreelem = sumFields(PREELEM_IDS);
+    const totalElem = sumFields(ELEM_IDS);
+    const totalUlis = sumFields(ULIS_IDS);
+    $('totalPreelem').textContent = totalPreelem;
+    $('totalElem').textContent = totalElem;
+    $('totalUlis').textContent = totalUlis;
+    $('totalGeneral').textContent = totalPreelem + totalElem;
+}
+
+// Validation en temps réel et au départ du champ
+document.querySelectorAll('#effectifsForm input[type="number"]').forEach(inp => {
+    inp.addEventListener('input', () => {
+        validateField(inp);
+        // Le niveau vient de changer : le champ ULIS associé peut devenir invalide.
+        const pairedUlisId = LEVEL_ULIS_MAP[inp.id];
+        if (pairedUlisId) validateField($(pairedUlisId));
+        updateTotaux();
+    });
+    inp.addEventListener('blur', () => validateField(inp));
+    // Bloquer les caractères non numériques (sauf suppression/navigation)
+    inp.addEventListener('keydown', e => {
+        if (['-', '+', 'e', 'E', '.', ','].includes(e.key)) e.preventDefault();
+    });
+});
+
+// ── 3. Construction du payload (champs vides exclus) ────────
+function getAnneeScolaire() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth(); // 0 = janvier … 7 = août
+    // Année scolaire : si avant septembre, c'est (y-1)/(y), sinon y/(y+1)
+    return m >= 8 ? `${y}-${y + 1}` : `${y - 1}-${y}`;
+}
+
+function buildPayload(uuid) {
+    const now = new Date();
+    const payload = {
+        uuid,
+        uai:          ecoleData.uai    || ecoleData.UAI    || "",
+        commune:      ecoleData.Commune || ecoleData.UAI_ecole_commune || ecoleData.uai_ecole_commune || "",
+        sigle:        ecoleData.Sigle   || ecoleData.UAI_ecole_sigle   || ecoleData.uai_ecole_sigle   || "",
+        annee_scolaire: getAnneeScolaire(),
+        timestamp:    now.toISOString(),   // ex. "2025-09-02T08:34:12.000Z"
+        source:       getSource(),
+    };
+
+    document.querySelectorAll('#effectifsForm input[type="number"]').forEach(inp => {
+        const val = inp.value.trim();
+        if (val !== "") payload[inp.name] = parseInt(val, 10);
+    });
+
+    return payload;
+}
+
+// ── 4. Soumission ────────────────────────────────────────────
+$('effectifsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('formErrorBlock').classList.add('d-none');
+    $('submitErrorBlock').classList.add('d-none');
+
+    // Valider tous les champs
+    const inputs = [...document.querySelectorAll('#effectifsForm input[type="number"]')];
+    const allValid = inputs.every(validateField);
+
+    if (!allValid) {
+        $('formErrorMsg').textContent = "Certaines valeurs sont invalides. Merci de corriger les champs en rouge.";
+        $('formErrorBlock').classList.remove('d-none');
+        $('formErrorBlock').focus();
+        announce("Erreur : certaines valeurs sont invalides.");
+        return;
+    }
+
+    // Vérifier qu'au moins un champ est rempli
+    const hasValue = inputs.some(i => i.value.trim() !== "");
+    if (!hasValue) {
+        $('formErrorMsg').textContent = "Veuillez saisir au moins un effectif avant d'envoyer.";
+        $('formErrorBlock').classList.remove('d-none');
+        $('formErrorBlock').focus();
+        announce("Erreur : aucun effectif saisi.");
+        return;
+    }
+
+    // État chargement
+    const btn = $('btnSubmit');
+    btn.disabled = true;
+    $('btnSpinner').classList.remove('d-none');
+    $('btnIcon').classList.add('d-none');
+    $('btnLabel').textContent = "Envoi en cours…";
+    announce("Envoi en cours, veuillez patienter.");
+
+    const uuid = getUUID();
+    const payload = buildPayload(uuid);
+
+    try {
+        const res = await fetch(CONFIG.webhookSubmit, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`Erreur serveur (HTTP ${res.status}).`);
+
+        // Succès
+        $('effectifsForm').classList.add('d-none');
+        $('successBlock').classList.remove('d-none');
+        $('successDownload').classList.remove('d-none');
+        $('successBlock').focus();
+        announce("Effectifs enregistrés avec succès.");
+
+    } catch (err) {
+        $('submitErrorMsg').textContent = `L'envoi a échoué : ${err.message}`;
+        $('submitErrorBlock').classList.remove('d-none');
+        $('submitErrorBlock').focus();
+        btn.disabled = false;
+        $('btnSpinner').classList.add('d-none');
+        $('btnIcon').classList.remove('d-none');
+        $('btnLabel').textContent = "Envoyer les effectifs";
+        announce("Erreur lors de l'envoi : " + err.message);
+    }
+});
+
+// ── 5. Initialisation ────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+    const uuid = getUUID();
+    if (!uuid) {
+        showInvalidLink();
+        return;
+    }
+    try {
+        const data = await fetchEcoleData(uuid);
+        const ecoleTrouvee = data && (data.uai || data.UAI);
+        if (ecoleTrouvee) {
+            ecoleData = data;
+            applyCampagneInfo(data);
+
+            if (data.campagne_statut === 'a_venir') {
+                showLoadError(`Cette campagne de saisie ouvrira à partir du ${formatDateHeure(data.Date_debut)}.`, true);
+                return;
+            }
+            if (data.campagne_statut === 'close') {
+                showLoadError(`La campagne de saisie est close depuis le ${formatDateHeure(data.Date_fin_ECOLE)}. Merci de contacter rapidement votre circonscription.`);
+                return;
+            }
+            if (data.campagne_active === false) {
+                showLoadError("Aucune campagne de saisie n'est en cours.");
+                return;
+            }
+
+            $('ecoleCard').classList.remove('d-none');
+            $('formCard').classList.remove('d-none');
+            displayEcoleData(data);
+            $('btnSubmit').disabled = false;
+
+            if (data.Date_fin_ECOLE) {
+                $('campagne-info').textContent = `Cette campagne de saisie est ouverte jusqu'au ${formatDateHeure(data.Date_fin_ECOLE)}.`;
+                $('campagne-info').classList.remove('d-none');
+            }
+        } else {
+            showInvalidLink();
+        }
+    } catch (err) {
+        console.error("Erreur de chargement des données école :", err);
+        showInvalidLink();
+    }
+});
+</script>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/dsfr/dsfr.module.min.js"></script>
+<script nomodule src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/dsfr/dsfr.nomodule.min.js"></script>
+</body>
+
+</html>
