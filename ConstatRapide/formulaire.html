@@ -197,6 +197,12 @@ button:focus-visible {
     border-left-color: var(--error-425);
 }
 
+.alert-success {
+    border-left-color: var(--success-425);
+    background: #e6f7ea;
+    color: var(--text-default-grey);
+}
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -588,7 +594,7 @@ button:focus-visible {
 
     <!-- Alerte erreur chargement école -->
     <div id="error-alert" class="alert alert-danger d-none mb-4" role="alert">
-        <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+        <i id="error-icon" class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
         <span id="error-message">Une erreur est survenue.</span>
     </div>
 
@@ -1047,10 +1053,14 @@ function displayEcoleData(data) {
     }
 }
 
-function showLoadError(msg, redText = false) {
+function showLoadError(msg, variant = 'danger') {
     $('ecole-display').innerHTML = '<span class="text-danger">—</span>';
     $('error-message').textContent = msg;
-    $('error-message').style.color = redText ? 'var(--error-425)' : '';
+    $('error-alert').classList.toggle('alert-danger', variant !== 'success');
+    $('error-alert').classList.toggle('alert-success', variant === 'success');
+    $('error-icon').className = variant === 'success'
+        ? 'fas fa-clock me-2'
+        : 'fas fa-exclamation-triangle me-2';
     $('error-alert').classList.remove('d-none');
     $('ecoleCard').classList.add('d-none');
     $('formCard').classList.add('d-none');
@@ -1258,7 +1268,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             applyCampagneInfo(data);
 
             if (data.campagne_statut === 'a_venir') {
-                showLoadError(`Cette campagne de saisie ouvrira à partir du ${formatDateHeure(data.Date_debut)}.`, true);
+                showLoadError(`Cette campagne de saisie ouvrira à partir du ${formatDateHeure(data.Date_debut)}.`, 'success');
                 return;
             }
             if (data.campagne_statut === 'close') {
