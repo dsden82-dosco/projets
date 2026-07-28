@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CSP stricte : aucun script/style inline (JS externalisé dans dataviz.js,
+     couleurs dynamiques appliquées via la CSSOM plutôt que style=""), toutes
+     les dépendances vendorisées en local sauf Google Fonts (Public Sans) et
+     les tuiles de fond de carte (CARTO) et webhooks n8n / API géo, listés
+     explicitement. data: dans img-src : l'export PNG de la vue Carte
+     rasterise les tuiles + polygones dans un <canvas> hors-écran, puis
+     réincorpore ce rendu en <image href="data:image/png;..."> dans le SVG
+     d'export partagé (même bandeau titre/légende que les autres vues) —
+     sans data:, ce <image> serait bloqué par la CSP. Note :
+     frame-ancestors/report-uri sont ignorés par les navigateurs quand la CSP
+     est posée en <meta> (pas d'en-têtes HTTP personnalisés possibles sur
+     GitHub Pages) — non inclus ici. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.basemaps.cartocdn.com; connect-src 'self' https://n8n.incubateur.education.gouv.fr https://geo.api.gouv.fr; base-uri 'self'; object-src 'none'; form-action 'self';">
+<title>Carte scolaire 1D — Prévisions d'effectifs</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<!-- Leaflet 1.9.4 (licence BSD-2-Clause) et Font Awesome 6.4.0 — solid only
+     (Icons CC BY 4.0, Fonts SIL OFL 1.1, Code MIT) : vendorisés localement
+     (vendor/leaflet, vendor/fontawesome) plutôt que chargés depuis cdnjs, pour
+     la même raison que turf.js/xlsx-js-style ci-dessous et pour permettre une
+     CSP stricte (script-src/style-src 'self', sans dépendance CDN). -->
+<link rel="stylesheet" href="vendor/leaflet/leaflet.min.css"/>
+<link rel="stylesheet" href="vendor/fontawesome/css/fontawesome.min.css">
+<link rel="stylesheet" href="vendor/fontawesome/css/solid.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap">
+<script src="vendor/leaflet/leaflet.min.js"></script>
+<!-- xlsx-js-style 1.2.0 (fork communautaire de SheetJS, licence Apache-2.0) :
+     seule variante gratuite supportant l'écriture de styles de cellules
+     (bordures) dans le .xlsx. Vendorisé localement (vendor/xlsx-js-style.min.js,
+     testé) plutôt que chargé depuis un CDN externe non vérifiable ici. -->
+<script src="vendor/xlsx-js-style.min.js"></script>
+<!-- Turf.js 7.3.5 (licence MIT) : fusion géométrique (turf.union) des
+     polygones communes d'un même RPI. Vendorisé et testé de la même façon. -->
+<script src="vendor/turf.min.js"></script>
+<link rel="stylesheet" href="dataviz.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="header">
+    <h1 id="page-title">Chargement…</h1>
+  </div>
+
+  <div id="body-wrap">
+    <nav id="sidebar" aria-label="Navigation des vues">
+      <button type="button" id="sidebar-toggle" title="Réduire/déployer la navigation" aria-label="Réduire/déployer la navigation">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <div id="sidebar-content">
+
+      <div class="nav-section">
+        <div class="nav-title">Échelle</div>
+        <div class="switch-row" id="switch-echelle" role="button" tabindex="0">
+          <span class="switch-opt" id="opt-epci">EPCI</span>
+          <span class="ts-track" id="track-echelle"><span class="ts-thumb"></span></span>
+          <span class="switch-opt" id="opt-circo">Circonscriptions</span>
+        </div>
+        <div class="echelle-compact" id="echelle-compact" role="button" tabindex="0" title="Changer d'échelle">
+          <i class="fa-solid fa-right-left"></i>
+          <span id="echelle-compact-label">EPCI</span>
+        </div>
+      </div>
+
+      <div class="nav-section" id="section-schools">
+        <button type="button" class="btn-schools" id="btn-toggle-schools" title="Afficher les écoles">
+          <i class="fa-solid fa-school"></i><span>Afficher les écoles</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Vue</div>
+        <div class="seg seg-icons" id="seg-vue">
+          <button type="button" class="seg-btn active" data-vue="carte" title="Cartes"><i class="fa-solid fa-earth-europe"></i><span>Cartes</span></button>
+          <button type="button" class="seg-btn" data-vue="courbes" title="Courbes"><i class="fa-solid fa-chart-line"></i><span>Courbes</span></button>
+          <button type="button" class="seg-btn" data-vue="tableau" title="Tableau"><i class="fa-solid fa-table-cells-large"></i><span>Tableau</span></button>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Unité</div>
+        <div class="seg seg-icons" id="seg-type">
+          <button type="button" class="seg-btn" data-type="effectifs" title="Effectifs"><i class="fa-solid fa-users"></i><span>Effectifs</span></button>
+          <button type="button" class="seg-btn active" data-type="variation" title="Variation"><i class="fa-solid fa-plus-minus"></i><span>Variation</span></button>
+          <button type="button" class="seg-btn" data-type="pourcentage" title="Pourcentage"><i class="fa-solid fa-percent"></i><span>Pourcent.</span></button>
+        </div>
+      </div>
+
+      <div class="nav-section discrete">
+        <div class="map-label-btns" id="map-label-btns" hidden>
+          <button type="button" class="btn-label-toggle small" id="btn-toggle-values">Afficher les valeurs</button>
+          <button type="button" class="btn-label-toggle small" id="btn-toggle-unite2" hidden>+ Autre unité</button>
+        </div>
+        <select id="sel-export" class="export-select" title="PNG/SVG : vue courante · Excel : toutes les données">
+          <option value="" disabled selected>Export</option>
+          <option value="png">PNG</option>
+          <option value="svg">SVG</option>
+          <option value="xlsx">Excel</option>
+        </select>
+      </div>
+      <!-- Version codée en dur, à mettre à jour à chaque commit touchant
+           dataviz.html/.js/.css — voir VERSION.md. -->
+      <p class="small text-muted app-version" id="app-version">DSDEN 82 [ExperimCarteSco v1.79]</p>
+
+      </div>
+    </nav>
+
+    <div id="content">
+      <div id="page-loader" hidden>
+        <div class="page-loader-spinner"></div>
+      </div>
+      <div id="session-error"></div>
+
+      <div id="pane-carte" class="view-pane">
+        <div id="map-toolbar">
+          <div id="tl-wrap">
+            <div id="tl-zones"></div>
+            <div id="tl-rail"></div>
+          </div>
+        </div>
+        <div id="map-holder">
+          <div id="map"></div>
+          <div id="map-controls">
+            <button type="button" class="map-ctrl-btn" id="btn-zoom-in" title="Zoom avant">+</button>
+            <button type="button" class="map-ctrl-btn" id="btn-zoom-out" title="Zoom arrière">−</button>
+            <button type="button" class="map-ctrl-btn" id="btn-zoom-reset" title="Réinitialiser la vue">Vue d'ensemble</button>
+            <button type="button" class="map-ctrl-btn" id="btn-toggle-legend" title="Afficher/masquer la légende"><i class="fa-solid fa-list"></i></button>
+          </div>
+          <div id="map-legend" class="legend"></div>
+          <button type="button" id="info-panel-toggle" title="Réduire/déployer le panneau" aria-label="Réduire/déployer le panneau">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <div id="map-info-panel">
+            <div id="info-panel-content">
+              <h3 id="info-feature-name"></h3>
+              <p id="info-feature-value"></p>
+              <div id="info-schoolslist-block" hidden></div>
+              <div id="info-school-block" hidden>
+                <h4 id="info-school-title"></h4>
+                <p id="info-school-uai" class="small text-muted"></p>
+                <p id="info-school-rpi" class="small text-muted" hidden></p>
+                <p id="info-school-chart-status" class="small text-muted" hidden></p>
+                <div id="info-school-chart-header">
+                  <span>Comparaison base 100</span>
+                  <div class="sc-icon-btns">
+                    <button type="button" class="sc-icon-btn sc-export-png" title="Exporter en PNG"><i class="fa-solid fa-image"></i></button>
+                    <button type="button" class="sc-icon-btn sc-export-svg" title="Exporter en SVG"><i class="fa-solid fa-file-code"></i></button>
+                    <button type="button" class="sc-icon-btn" id="btn-schoolchart-expand" title="Afficher en grand">
+                      <i class="fa-solid fa-expand"></i>
+                    </button>
+                  </div>
+                </div>
+                <svg id="info-school-chart" class="school-chart-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div id="info-school-chart-legend" class="school-chart-legend"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-courbes" class="view-pane">
+        <div id="curves-wrap">
+          <div id="curves-chart"><svg id="curves-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+          <div id="curves-legend"></div>
+        </div>
+      </div>
+
+      <div id="pane-tableau" class="view-pane">
+        <div id="heat-wrap">
+          <div id="heat-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="tooltip"></div>
+<div id="chart-modal" hidden>
+  <div id="chart-modal-backdrop"></div>
+  <div id="chart-modal-card">
+    <button type="button" id="chart-modal-close" title="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    <div id="chart-modal-export-btns" class="sc-icon-btns">
+      <button type="button" class="sc-icon-btn sc-export-png" title="Exporter en PNG"><i class="fa-solid fa-image"></i></button>
+      <button type="button" class="sc-icon-btn sc-export-svg" title="Exporter en SVG"><i class="fa-solid fa-file-code"></i></button>
+    </div>
+    <h3 id="chart-modal-title"></h3>
+    <svg id="chart-modal-svg" class="school-chart-svg school-chart-svg-large" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="chart-modal-legend" class="school-chart-legend"></div>
+  </div>
+</div>
+
+<script src="dataviz.js"></script>
+</body>
+</html>
