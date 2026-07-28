@@ -2973,6 +2973,7 @@ function showSessionError(html) {
   const el = document.getElementById('session-error');
   document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('show'));
   el.style.display = 'flex';
+  el.style.flexDirection = 'column';
   el.innerHTML = html;
 }
 // Session invalide/périmée : masque entièrement le bandeau titre et le volet
