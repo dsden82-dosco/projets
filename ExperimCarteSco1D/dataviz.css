@@ -436,7 +436,6 @@ body.session-expired #header, body.session-expired #sidebar { display: none; }
 #session-error {
   display: none; align-items: center; justify-content: center; height: 100%;
   text-align: center; padding: 2rem; font-size: 1.15rem;
-  flex-direction: column;
 }
 
 /* ── Vue Courbes ──────────────────────────────────────────────── */
