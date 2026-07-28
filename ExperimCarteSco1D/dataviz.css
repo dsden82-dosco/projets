@@ -434,7 +434,7 @@ body.session-expired #header, body.session-expired #sidebar { display: none; }
 #map-legend:empty { display: none; }
 
 #session-error {
-  display: none; align-items: center; justify-content: center; height: 100%;
+  display: none; align-items: center; justify-content: center;
   text-align: center; padding: 2rem; font-size: 1.15rem;
 }
 
