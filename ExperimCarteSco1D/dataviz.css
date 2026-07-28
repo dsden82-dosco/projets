@@ -438,6 +438,15 @@ body.session-expired #header, body.session-expired #sidebar { display: none; }
   text-align: center; padding: 2rem; font-size: 1.15rem;
 }
 
+.centered-block {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
 /* ── Vue Courbes ──────────────────────────────────────────────── */
 #curves-wrap { position: absolute; inset: 0; display: flex; }
 #curves-chart { flex: 1; min-width: 0; height: 100%; position: relative; }
