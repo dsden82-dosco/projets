@@ -79,6 +79,7 @@ async function postJson(url, sessId) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ SessID: sessId }),
   });
+  if (res.status === 429) throw new Error('Trop de requêtes envoyées. Merci de patienter quelques instants.');
   if (!res.ok) throw new Error(`Erreur serveur (HTTP ${res.status}).`);
   return await res.json();
 }
