@@ -366,17 +366,58 @@ async function ensureScaleData(echelle) {
   return cache;
 }
 
-/* ══════════════════════ CARTE (Leaflet) ══════════════════════ */
+/* ══════════════════════ CARTE (Leaflet + MapLibre GL) ══════════════════════ */
+// Fond de carte vectoriel OpenFreeMap, style « Positron » (gratuit, sans clé,
+// sans limite d'usage — cf. https://openfreemap.org). Rendu par MapLibre GL
+// JS (vendor/maplibre-gl, build CSP — pas de worker blob:, cf. le
+// maplibregl.setWorkerUrl() juste en dessous) via le plugin
+// vendor/leaflet-maplibre-gl.js, qui expose une L.Layer classique : ça
+// permet de garder tout le reste (polygones, marqueurs écoles, popups,
+// export…) en Leaflet pur, sans migrer l'appli entière vers MapLibre.
+maplibregl.setWorkerUrl('vendor/maplibre-gl/maplibre-gl-csp-worker.js');
+const OFM_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+let ofmStyleCache = null;
+// Le style Positron d'origine s'arrête aux limites départementales
+// (admin_level ≤ 6) : les limites communales (admin_level = 8) existent
+// dans la source vectorielle « openmaptiles » (couche boundary) mais n'ont
+// pas de calque dédié. On l'ajoute nous-mêmes, juste après les limites
+// départementales (sous les libellés, au-dessus des aplats de couleur),
+// avec un tracé plus visible qu'un simple liseré administratif.
+function withCommuneBoundaries(style) {
+  const idx = style.layers.findIndex(l => l.id === 'boundary_2');
+  style.layers.splice(idx >= 0 ? idx + 1 : style.layers.length, 0, {
+    id: 'boundary_commune',
+    type: 'line',
+    source: 'openmaptiles',
+    'source-layer': 'boundary',
+    minzoom: 8,
+    filter: ['all', ['==', ['get', 'admin_level'], 8], ['!=', ['get', 'maritime'], 1]],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': 'hsl(0, 0%, 38%)',
+      'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 12, 1.1, 16, 2],
+      'line-dasharray': [3, 1.5],
+      'line-opacity': 0.85,
+    },
+  });
+  return style;
+}
+// Récupère (et met en cache) le style modifié ; renvoie une copie profonde
+// à chaque appel car maplibregl.Map mute l'objet style qu'on lui passe —
+// la carte principale et la carte d'export (buildMapExportInstance) ne
+// doivent jamais partager la même instance.
+async function getOfmPositronStyle() {
+  if (!ofmStyleCache) {
+    const resp = await fetch(OFM_STYLE_URL);
+    ofmStyleCache = withCommuneBoundaries(await resp.json());
+  }
+  return JSON.parse(JSON.stringify(ofmStyleCache));
+}
+
 const map = L.map('map', { zoomControl: false, zoomSnap: 0.25, zoomDelta: 0.25 });
-// Fond de carte OSM standard (rendu Mapnik classique), servi par le miroir
-// OpenStreetMap France plutôt que tile.openstreetmap.org : politique
-// d'usage plus permissive pour un site embarqué, mêmes tuiles/mêmes
-// données OSM (donc même couverture des communes, y compris les plus
-// petites). Gratuit, sans clé — cf. https://www.openstreetmap.fr/mentions-legales/.
-L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  subdomains: 'abc', maxZoom: 19,
-}).addTo(map);
+getOfmPositronStyle().then(style => {
+  L.maplibreGL({ style, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+});
 let geojsonLayer = null, labelMarkers = [];
 let lastFitBounds = null;
 // Le calage en grille des écoles superposées est calculé en pixels écran :
@@ -2404,7 +2445,7 @@ function heatmapToSVG() {
 }
 /* ── Export de la vue Carte (PNG / SVG) ──
    Reprend le principe du widget de référence (carte Leaflet hors-écran,
-   fitBounds sur l'emprise des polygones, tuiles OSM) mais avec les
+   fitBounds sur l'emprise des polygones, fond OpenFreeMap/MapLibre) mais avec les
    dimensions dérivées du contenu (pas de cadre fixe 1980×1200) et le bandeau
    titre + légende minimisée communs aux 3 autres vues, plutôt qu'un titre et
    une légende surimposés à la carte elle-même. PNG intègre le fond de carte
@@ -2428,39 +2469,44 @@ async function buildMapExportInstance(mapW, mapH, bounds) {
     zoomControl: false, attributionControl: false, fadeAnimation: false,
     zoomSnap: 0.05, zoomDelta: 0.05,
   });
-  const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
-    subdomains: 'abc', maxZoom: 19, crossOrigin: true,
-  }).addTo(exportMap);
+  const style = await getOfmPositronStyle();
+  // preserveDrawingBuffer : nécessaire pour pouvoir relire les pixels du
+  // <canvas> WebGL après rendu (rasterizeMapTiles) — sans cette option, le
+  // tampon peut être effacé avant qu'on ait pu le recopier dans le canvas
+  // d'export. Coût mémoire/perf négligeable ici (carte hors-écran, jetable).
+  const glLayer = L.maplibreGL({ style, preserveDrawingBuffer: true }).addTo(exportMap);
   const margin = 28;
   exportMap.fitBounds(bounds, { padding: [margin, margin], animate: false });
   await new Promise(resolve => {
     let done = false;
     const finish = () => { if (!done) { done = true; resolve(); } };
-    tileLayer.once('load', finish);
-    setTimeout(finish, 2500); // filet de sécurité
+    // 'idle' (plutôt que 'load') : attend que toutes les sources aient fini
+    // de charger ET que le rendu soit stabilisé — pertinent pour des tuiles
+    // vectorielles où le style continue d'arriver par couches successives.
+    glLayer.getMaplibreMap().once('idle', finish);
+    setTimeout(finish, 4000); // filet de sécurité (vectoriel : plus lent qu'un raster)
   });
   await new Promise(r => setTimeout(r, 150)); // laisser le DOM se stabiliser
-  return { exportMap, holder };
+  return { exportMap, holder, glLayer };
 }
-// Récupère les tuiles déjà chargées dans la carte hors-écran (mêmes <img>
-// que Leaflet a positionnées) et les redessine dans un <canvas> à la même
-// position — nécessaire pour ensuite lire les pixels (toDataURL), ce qu'un
-// <img> affiché par Leaflet ne permet pas directement.
-async function rasterizeMapTiles(holder, mapW, mapH) {
+// Le fond de carte MapLibre se rend dans un unique <canvas> WebGL (et non
+// plus une mosaïque d'<img> de tuiles comme l'ancien fond raster) : on le
+// redessine tel quel, à sa position/taille CSS réelle (le canvas MapLibre
+// déborde légèrement du conteneur pour amortir les pans — cf. l'option
+// `padding` du plugin), dans le canvas d'export destiné à toDataURL().
+async function rasterizeMapTiles(holder, glLayer, mapW, mapH) {
   const canvas = document.createElement('canvas');
   canvas.width = mapW; canvas.height = mapH;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#f5f5f5'; ctx.fillRect(0, 0, mapW, mapH);
-  const holderRect = holder.getBoundingClientRect();
-  const tileEls = holder.querySelectorAll('.leaflet-tile-pane img.leaflet-tile');
-  await Promise.all([...tileEls].map(img => new Promise(res => {
-    if (!img.src) return res();
-    const r = img.getBoundingClientRect();
-    const i = new Image(); i.crossOrigin = 'anonymous';
-    i.onload = () => { ctx.drawImage(i, r.left - holderRect.left, r.top - holderRect.top, r.width, r.height); res(); };
-    i.onerror = () => res();
-    i.src = img.src;
-  })));
+  const glCanvas = glLayer && glLayer.getCanvas();
+  if (glCanvas) {
+    const holderRect = holder.getBoundingClientRect();
+    const r = glCanvas.getBoundingClientRect();
+    try {
+      ctx.drawImage(glCanvas, r.left - holderRect.left, r.top - holderRect.top, r.width, r.height);
+    } catch (e) { /* canvas WebGL taché (CORS manquant côté serveur de tuiles) : fond conservé tel quel */ }
+  }
   return canvas;
 }
 function mapPolygonPathD(feature, latLng2px) {
@@ -2727,7 +2773,7 @@ async function buildMapExportSVG(fmt) {
   const contentY = banner.height + banner.gap;
   const mapH = Math.round(EXPORT_H - contentY);
 
-  const { exportMap, holder } = await buildMapExportInstance(mapW, mapH, bounds);
+  const { exportMap, holder, glLayer } = await buildMapExportInstance(mapW, mapH, bounds);
   try {
     const latLng2px = (lat, lng) => { const pt = exportMap.latLngToContainerPoint([lat, lng]); return [pt.x, pt.y]; };
 
@@ -2741,7 +2787,7 @@ async function buildMapExportSVG(fmt) {
       const rpiFC = { type: 'FeatureCollection', features: rpiFCAll.features.filter(f => paddedBounds.contains(featureCenter(f))) };
       const { placed, breaks, colors, isPct } = await buildSchoolExportMarkers(exportMap, bounds);
       if (fmt === 'png') {
-        const canvas = await rasterizeMapTiles(holder, mapW, mapH);
+        const canvas = await rasterizeMapTiles(holder, glLayer, mapW, mapH);
         const ctx = canvas.getContext('2d');
         drawSimplifiedPolygonsCanvas(ctx, cache, latLng2px);
         if (rpiFC.features.length) drawRpiPolygonsCanvas(ctx, rpiFC, latLng2px);
@@ -2757,7 +2803,7 @@ async function buildMapExportSVG(fmt) {
       legendSVG = buildMapLegendOverlay(mapW, mapH, title, items);
     } else {
       if (fmt === 'png') {
-        const canvas = await rasterizeMapTiles(holder, mapW, mapH);
+        const canvas = await rasterizeMapTiles(holder, glLayer, mapW, mapH);
         const ctx = canvas.getContext('2d');
         drawMapPolygonsCanvas(ctx, cache, latLng2px);
         drawMapLabelsCanvas(ctx, cache, latLng2px);
