@@ -7,8 +7,8 @@
 <!-- CSP stricte : aucun script/style inline (JS externalisé dans dataviz.js,
      couleurs dynamiques appliquées via la CSSOM plutôt que style=""), toutes
      les dépendances vendorisées en local sauf Google Fonts (Public Sans) et
-     les tuiles de fond de carte (Plan IGN, Géoplateforme) et webhooks n8n /
-     API géo, listés explicitement. data: dans img-src : l'export PNG de la
+     les tuiles de fond de carte (OSM, miroir OpenStreetMap France) et
+     webhooks n8n / API géo, listés explicitement. data: dans img-src : l'export PNG de la
      vue Carte rasterise les tuiles + polygones dans un <canvas> hors-écran,
      puis réincorpore ce rendu en <image href="data:image/png;..."> dans le
      SVG d'export partagé (même bandeau titre/légende que les autres vues) —
@@ -16,7 +16,7 @@
      frame-ancestors/report-uri sont ignorés par les navigateurs quand la CSP
      est posée en <meta> (pas d'en-têtes HTTP personnalisés possibles sur
      GitHub Pages) — non inclus ici. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://data.geopf.fr; connect-src 'self' https://n8n.incubateur.education.gouv.fr https://geo.api.gouv.fr; base-uri 'self'; object-src 'none'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.tile.openstreetmap.fr; connect-src 'self' https://n8n.incubateur.education.gouv.fr https://geo.api.gouv.fr; base-uri 'self'; object-src 'none'; form-action 'self';">
 <title>Carte scolaire 1D — Prévisions d'effectifs</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <!-- Leaflet 1.9.4 (licence BSD-2-Clause) et Font Awesome 6.4.0 — solid only
@@ -106,7 +106,7 @@
       </div>
       <!-- Version codée en dur, à mettre à jour à chaque commit touchant
            dataviz.html/.js/.css — voir VERSION.md. -->
-      <p class="small text-muted app-version" id="app-version">DSDEN 82 [ExperimCarteSco v1.80]</p>
+      <p class="small text-muted app-version" id="app-version">DSDEN 82 [ExperimCarteSco v1.81]</p>
 
       </div>
     </nav>
