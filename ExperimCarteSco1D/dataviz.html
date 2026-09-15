@@ -7,16 +7,23 @@
 <!-- CSP stricte : aucun script/style inline (JS externalisé dans dataviz.js,
      couleurs dynamiques appliquées via la CSSOM plutôt que style=""), toutes
      les dépendances vendorisées en local sauf Google Fonts (Public Sans) et
-     les tuiles de fond de carte (OSM, miroir OpenStreetMap France) et
-     webhooks n8n / API géo, listés explicitement. data: dans img-src : l'export PNG de la
-     vue Carte rasterise les tuiles + polygones dans un <canvas> hors-écran,
-     puis réincorpore ce rendu en <image href="data:image/png;..."> dans le
-     SVG d'export partagé (même bandeau titre/légende que les autres vues) —
-     sans data:, ce <image> serait bloqué par la CSP. Note :
-     frame-ancestors/report-uri sont ignorés par les navigateurs quand la CSP
-     est posée en <meta> (pas d'en-têtes HTTP personnalisés possibles sur
-     GitHub Pages) — non inclus ici. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.tile.openstreetmap.fr; connect-src 'self' https://n8n.incubateur.education.gouv.fr https://geo.api.gouv.fr; base-uri 'self'; object-src 'none'; form-action 'self';">
+     les tuiles/style du fond de carte (OpenFreeMap) et webhooks n8n / API
+     géo, listés explicitement. data: dans img-src : l'export PNG de la vue
+     Carte rasterise le fond de carte + les polygones dans un <canvas>
+     hors-écran, puis réincorpore ce rendu en <image href="data:image/png;...">
+     dans le SVG d'export partagé (même bandeau titre/légende que les autres
+     vues) — sans data:, ce <image> serait bloqué par la CSP. worker-src
+     'self' : MapLibre GL exécute le décodage des tuiles vectorielles dans un
+     Web Worker ; le build « CSP » (maplibre-gl-csp.js +
+     maplibregl.setWorkerUrl() dans dataviz.js) charge ce worker comme un
+     fichier same-origin classique plutôt que via une blob: URL, donc pas
+     besoin d'autoriser blob: dans worker-src. connect-src
+     tiles.openfreemap.org : c'est le domaine unique qui sert à la fois le
+     style JSON, les tuiles vectorielles, les sprites et les glyphes de
+     police du fond de carte. Note : frame-ancestors/report-uri sont ignorés
+     par les navigateurs quand la CSP est posée en <meta> (pas d'en-têtes
+     HTTP personnalisés possibles sur GitHub Pages) — non inclus ici. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://tiles.openfreemap.org https://n8n.incubateur.education.gouv.fr https://geo.api.gouv.fr; worker-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self';">
 <title>Carte scolaire 1D — Prévisions d'effectifs</title>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <!-- Leaflet 1.9.4 (licence BSD-2-Clause) et Font Awesome 6.4.0 — solid only
@@ -25,12 +32,23 @@
      la même raison que turf.js/xlsx-js-style ci-dessous et pour permettre une
      CSP stricte (script-src/style-src 'self', sans dépendance CDN). -->
 <link rel="stylesheet" href="vendor/leaflet/leaflet.min.css"/>
+<!-- MapLibre GL JS 5.24.0 (licence BSD-3-Clause) : fond de carte vectoriel
+     OpenFreeMap (style Positron). Build « CSP » (maplibre-gl-csp.js) plutôt
+     que le bundle standard, pour éviter d'avoir à autoriser blob: dans
+     worker-src (cf. la CSP ci-dessus). maplibre-gl-leaflet 0.1.4 (licence
+     ISC) : expose ce fond MapLibre comme une L.Layer Leaflet ordinaire, pour
+     ne pas avoir à migrer toute l'appli (polygones, marqueurs, export…) vers
+     l'API MapLibre. Vendorisés localement pour la même raison que les
+     dépendances ci-dessous. -->
+<link rel="stylesheet" href="vendor/maplibre-gl/maplibre-gl.css">
 <link rel="stylesheet" href="vendor/fontawesome/css/fontawesome.min.css">
 <link rel="stylesheet" href="vendor/fontawesome/css/solid.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap">
 <script src="vendor/leaflet/leaflet.min.js"></script>
+<script src="vendor/maplibre-gl/maplibre-gl-csp.js"></script>
+<script src="vendor/leaflet-maplibre-gl.js"></script>
 <!-- xlsx-js-style 1.2.0 (fork communautaire de SheetJS, licence Apache-2.0) :
      seule variante gratuite supportant l'écriture de styles de cellules
      (bordures) dans le .xlsx. Vendorisé localement (vendor/xlsx-js-style.min.js,
@@ -106,7 +124,7 @@
       </div>
       <!-- Version codée en dur, à mettre à jour à chaque commit touchant
            dataviz.html/.js/.css — voir VERSION.md. -->
-      <p class="small text-muted app-version" id="app-version">DSDEN 82 [ExperimCarteSco v1.81]</p>
+      <p class="small text-muted app-version" id="app-version">DSDEN 82 [ExperimCarteSco v1.82]</p>
 
       </div>
     </nav>
