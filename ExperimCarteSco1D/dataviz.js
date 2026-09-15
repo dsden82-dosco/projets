@@ -368,9 +368,15 @@ async function ensureScaleData(echelle) {
 
 /* ══════════════════════ CARTE (Leaflet) ══════════════════════ */
 const map = L.map('map', { zoomControl: false, zoomSnap: 0.25, zoomDelta: 0.25 });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains: 'abcd', maxZoom: 19, detectRetina: true,
+// Fond de carte « Plan IGN » (Géoplateforme, service WMTS gratuit sans clé
+// d'API — cf. https://cartes.gouv.fr/decouverte). Sert du image/png déjà
+// projeté en Web Mercator (TILEMATRIXSET=PM) : {z}/{x}/{y} se substituent
+// directement à TILEMATRIX/TILECOL/TILEROW, donc pas besoin d'un plugin
+// Leaflet.WMTS dédié. maxNativeZoom 16 : au-delà, Leaflet suréchantillonne
+// les tuiles du niveau 16 plutôt que d'interroger un niveau inexistant.
+L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+  attribution: '© <a href="https://www.ign.fr/">IGN</a> — Plan IGN (Géoplateforme)',
+  maxNativeZoom: 16, maxZoom: 19,
 }).addTo(map);
 let geojsonLayer = null, labelMarkers = [];
 let lastFitBounds = null;
@@ -2399,7 +2405,7 @@ function heatmapToSVG() {
 }
 /* ── Export de la vue Carte (PNG / SVG) ──
    Reprend le principe du widget de référence (carte Leaflet hors-écran,
-   fitBounds sur l'emprise des polygones, tuiles CARTO) mais avec les
+   fitBounds sur l'emprise des polygones, tuiles Plan IGN) mais avec les
    dimensions dérivées du contenu (pas de cadre fixe 1980×1200) et le bandeau
    titre + légende minimisée communs aux 3 autres vues, plutôt qu'un titre et
    une légende surimposés à la carte elle-même. PNG intègre le fond de carte
@@ -2423,8 +2429,8 @@ async function buildMapExportInstance(mapW, mapH, bounds) {
     zoomControl: false, attributionControl: false, fadeAnimation: false,
     zoomSnap: 0.05, zoomDelta: 0.05,
   });
-  const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd', maxZoom: 19, crossOrigin: true,
+  const tileLayer = L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+    maxNativeZoom: 16, maxZoom: 19, crossOrigin: true,
   }).addTo(exportMap);
   const margin = 28;
   exportMap.fitBounds(bounds, { padding: [margin, margin], animate: false });
