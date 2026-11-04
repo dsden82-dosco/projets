@@ -35,6 +35,7 @@ header{background:#fff;border-bottom:1px solid #ddd;border-top:5px solid;border-
 .pill.on.Mauvais{background:#ffe9d0;border-color:#b34000;color:#b34000}
 .pill.on.TM{background:#ffe9e9;border-color:var(--rm);color:var(--rm)}
 .hl text{paint-order:stroke;stroke:#000;stroke-width:3px;fill:#fff;font:700 12px Arial;text-anchor:middle;dominant-baseline:middle}
+.leaflet-marker-icon.rose-ico{pointer-events:none!important}
 </style>
 </head>
 <body>
@@ -75,7 +76,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <li>Travaux d’adaptation et audit</li>
   </ol>
   <p><b>Durée estimée :</b> environ 10 à 20 minutes.</p>
-  <p class="text-muted small">Toutes les questions sont obligatoires, sauf l’identifiant du bâtiment (2.1.1) et les commentaires.</p>
+  <p class="text-muted small">Toutes les questions sont obligatoires. Les commentaires sont facultatifs, mais le détail des éléments présents dans votre école sera utile pour l'étude de la situation.</p>
   <div class="text-end"><button class="btn btn-primary" data-go="1">Commencer</button></div>
 </section>
 
@@ -85,12 +86,13 @@ Essai sans n8n : ajouter ?demo à l'URL.
   <div class="row g-4">
     <div class="col-xl-6"><form id="f1">
       <div class="q" data-req><p><b>1.1</b> Votre établissement présente-t-il des locaux d’enseignement dont les façades sont exposées Sud / Ouest / Sud-Ouest ?</p><div data-yn="Question_1_1"></div></div>
-      <div class="q" data-req><p><b>1.2</b> Dispose-t-il d’équipements ou de dispositifs favorisant la baisse de température intérieure et en état de fonctionner ?</p><div data-yn="Question_1_2"></div></div>
-      <div class="q" data-req><p><b>1.3</b> Présente-t-il des protections extérieures des façades Sud / Ouest / Sud-Ouest et en état de fonctionner ?</p><div data-yn="Question_1_3"></div></div>
+      <div class="q" data-req><p><b>1.2</b> Dispose-t-il d’équipements ou de dispositifs favorisant la baisse de température intérieure et en état de fonctionner ? (climatiseurs, rafraîchisseurs d'air...)</p><div data-yn="Question_1_2"></div></div>
+      <div class="q" data-req><p><b>1.3</b> Présente-t-il des protections extérieures des façades Sud / Ouest / Sud-Ouest et en état de fonctionner ? (stores, volets, auvents...)</p><div data-yn="Question_1_3"></div></div>
     </form></div>
     <div class="col-xl-6">
       <div id="map" role="img" aria-label="Vue aérienne de l’établissement avec boussole"></div>
-      <div class="small text-muted mt-1">Nord en haut de la carte. Le secteur orange indique les façades exposées Sud / Sud-Ouest / Ouest. Vous pouvez passer en vue "Plan" en cliquant sur l'icône couches en haut à droite.</div>
+      <div class="small text-muted mt-1">Nord en haut de la carte. Le secteur orange indique les façades exposées Sud / Sud-Ouest / Ouest. Faites glisser la boussole par son centre pour la déplacer.<br/>
+         <i>Vous pouvez <b>passer en vue "Plan"</b> en cliquant sur l'icône des calques en haut à droite.</i></div>
     </div>
   </div>
   <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" data-go="1">Suivant</button></div>
@@ -115,9 +117,9 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <div class="q"><p><b>3.1</b> Après utilisation de la grille d’évaluation (partie 1), le classement <b>confort thermique global</b> de votre établissement est :</p>
       <div id="res"><span class="pill Correct">Correct</span> <span class="pill Mauvais">Mauvais</span> <span class="pill TM">Très Mauvais</span></div></div>
     <p class="small fst-italic text-muted">Exemples de travaux sur le bâti : isolation, végétalisation, îlot de fraîcheur, store, volet, brise-soleil, climatisation, double vitrage, pompe à chaleur, revêtement clair, films de protection, brasseur d’air…</p>
-    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>prévus</b> par la collectivité ?</p><div data-yn="q32"></div></div>
+    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>d'ors et déjà prévus</b> par la collectivité ?</p><div data-yn="q32"></div></div>
     <div class="q d-none" data-if="q32=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d32" class="form-control" rows="3"></textarea></div>
-    <div class="q" data-req><p><b>3.3</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>à prévoir</b> par la collectivité ?</p><div data-yn="q33"></div></div>
+    <div class="q" data-req><p><b>3.3</b> Selon vous, des travaux d’adaptation aux fortes chaleurs sont-ils <b>à prévoir à l'avenir</b> par la collectivité ?</p><div data-yn="q33"></div></div>
     <div class="q d-none" data-if="q33=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d33" class="form-control" rows="3"></textarea></div>
     <div class="q" data-req><p><b>3.4</b> Un audit énergétique a-t-il été établi par la collectivité ?</p><div data-yn="q34" data-opts="OUI,NON,NE SAIT PAS"></div></div>
     <div class="q d-none" data-if="q34=OUI" data-req><label class="form-label"><b>3.5</b> Quelles sont les préconisations de cet audit ?</label><textarea name="q35" class="form-control" rows="4"></textarea></div>
@@ -138,8 +140,9 @@ Essai sans n8n : ajouter ?demo à l'URL.
 
 <!-- MODALE BATIMENT -->
 <div class="modal fade" id="mb" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-scrollable"><form id="fb" class="modal-content" novalidate>
-  <div class="modal-header"><h3 class="modal-title fs-5" id="mt"></h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
+  <div class="modal-header"><h3 class="modal-title fs-5" id="mt"></h3><button type="button" class="btn btn-sm btn-outline-primary ms-2" id="mcb" title="Afficher la carte et la boussole" aria-label="Afficher la carte et la boussole">🧭</button><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
   <div class="modal-body" id="mbody">
+     <div id="mp" class="d-none mb-4"><div id="map2" style="height:340px;border:1px solid #ccc"></div><div class="small text-muted mt-1">Faites glisser la boussole par son centre pour l’orienter sur ce bâtiment (nord en haut).</div></div>
     <div class="mb-4"><label class="fw-bold" for="b1"><b>2.1.1</b> Identifiant Référentiel National du bâtiment (ID-RNB, si connu)</label>
       <input id="b1" name="b1" class="form-control" placeholder="ex. : XXXX-XXXX-XXXX">
       <div class="form-text">À rechercher sur <a href="https://rnb.beta.gouv.fr" target="_blank" rel="noopener">rnb.beta.gouv.fr</a>.</div></div>
@@ -154,7 +157,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
 const CFG={GET:'https://n8n.incubateur.education.gouv.fr/webhook/461d7a68-7faa-4aba-bf08-9600489d2d0a',POST:'https://n8n.incubateur.education.gouv.fr/webhook/4c19dec3-2eb6-40a2-b3b3-bcce140710a3'};
 const OMB=['AUVENT','ARBRES DE GRANDE HAUTEUR','BATIMENT(S) MITOYEN(S)','AUTRE'];
 const BQ=[
-['3','2.1.3','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <b>exposées au sud</b> ?'],
+['3','2.1.3','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <strong>exposées au sud</strong> ?'],
 ['4','2.1.4','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <b>exposées au sud-ouest</b> ?'],
 ['5','2.1.5','Ce bâtiment dispose-t-il d’<b>équipements favorisant l’élévation de la température intérieure</b> <i>(présence de verrière, patio, etc.)</i> ?'],
 ['6','2.1.6','Ce bâtiment dispose-t-il d’<b>équipements ou dispositifs liés au renouvellement d’air, améliorant le confort d’été</b> ? <i>(ventilation mécanique, brasseurs d’air, ventilateurs sur pied, ouverture possible des fenêtres tôt le matin et/ou tard le soir…)</i>','Préciser ici par exemple si les équipements sont en état fonctionnel, en nombre suffisant, si l’organisation et la configuration des locaux permettent la mise en place de l’ouverture des fenêtres la nuit, etc.'],
@@ -162,7 +165,7 @@ const BQ=[
 ['8','2.1.8','Ce bâtiment dispose-t-il d’<b>éléments permettant l’ombrage total des façades exposées au soleil l’après-midi</b> (auvent, arbres de grande hauteur…) ?']];
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const P=new URLSearchParams(location.search);
-let E={},bat={},cur=0,nbPrev='',cb=0,map,resultat='';
+return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/><circle r="16" fill="#fff" fill-opacity=".01" style="pointer-events:auto;cursor:move"><title>Glisser pour déplacer la boussole</title></circle></svg>'}
 
 /* ---------- construction ---------- */
 const yn=(n,o=['OUI','NON'])=>o.map((v,i)=>`<input type="radio" name="${n}" id="${n}_${i}" value="${v}"><label for="${n}_${i}">${v}</label>`).join('');
@@ -190,9 +193,9 @@ const fill=(f,o)=>{f.reset();for(const e of f.elements){if(!e.name)continue;cons
 const val=n=>(document.querySelector(`[name="${n}"]:checked`)||{}).value||'';
 const calc=(a,b,c)=>{const eq=b==='OUI',pr=c==='OUI';if(a==='NON')return eq?'Correct':'Mauvais';return eq&&pr?'Correct':(eq||pr)?'Mauvais':'Très Mauvais'};
 const KEY='bati_chaleur_'+(P.get('uuid')||'demo');
-function save(){try{localStorage.setItem(KEY,JSON.stringify({cur:Math.min(cur,3),f1:grab($('#f1')),f3:grab($('#f3')),nb:$('#nb').value,bat}))}catch{}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({cur:Math.min(cur,3),f1:grab($('#f1')),f3:grab($('#f3')),nb:$('#nb').value,bat,rp}))}catch{}}
 function restore(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d)return 0;
-  fill($('#f1'),d.f1);fill($('#f3'),d.f3);$('#nb').value=d.nb||'';nbPrev=$('#nb').value;bat=d.bat||{};renderB();
+  fill($('#f1'),d.f1);fill($('#f3'),d.f3);$('#nb').value=d.nb||'';nbPrev=$('#nb').value;bat=d.bat||{};rp=d.rp||{};renderB();
   if(val('Question_1_1')&&val('Question_1_2')&&val('Question_1_3'))resultat=calc(val('Question_1_1'),val('Question_1_2'),val('Question_1_3'));
   for(let i=0;i<d.cur;i++)$(`.step[data-s="${i}"]`).classList.add('ok');
   $('#draft').classList.remove('d-none');return d.cur}catch{return 0}}
@@ -234,14 +237,21 @@ function rose(){const q=(a,r)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/
   s+='<path d="M0,-100 L-8,-76 L0,-84 L8,-76Z" fill="#e1000f" stroke="#fff"/><g class="hl">';
   [['N',0],['NE',45],['E',90],['SE',135],['S',180],['SO',225],['O',270],['NO',315]].forEach(([t,a])=>{const[x,y]=q(a,t.length>1?96:92).split(',');const[X,Y]=q(a,116).split(',');s+=`<text x="${X}" y="${Y}">${t}</text>`});
   return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/></svg>'}
-function initMap(){if(map){setTimeout(()=>map.invalidateSize(),60);return}
-  const[lat,lon]=ll(E.coord_x,E.coord_y);if(!isFinite(lat)){$('#map').innerHTML='<div class="p-4 text-muted">Géolocalisation indisponible pour cet établissement.</div>';return}
+function mkMap(el,key){const[lat,lon]=ll(E.coord_x,E.coord_y);
+  if(!isFinite(lat)){el.innerHTML='<div class="p-4 text-muted">Géolocalisation indisponible pour cet établissement.</div>';return null}
   const ign=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'}),
-  esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'}),
-  plan=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'});
-  map=L.map('map',{layers:[ign]}).setView([lat,lon],18);
-  L.control.layers({'Vue aérienne IGN':ign,'Plan IGN':plan,'Vue satellite Esri':esri}).addTo(map);
-  L.marker([lat,lon],{interactive:false,keyboard:false,icon:L.divIcon({className:'',html:rose(),iconSize:[250,250],iconAnchor:[125,125]})}).addTo(map)}
+  plan=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'}),
+  esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'});
+  const p=rp[key]||rp.main||[lat,lon];
+  const m=L.map(el,{layers:[ign]}).setView(p,18);
+  L.control.layers({'Vue aérienne IGN':ign,'Plan IGN':plan,'Vue satellite Esri':esri}).addTo(m);
+  const mk=L.marker(p,{draggable:true,icon:L.divIcon({className:'rose-ico',html:rose(),iconSize:[250,250],iconAnchor:[125,125]})}).addTo(m);
+  mk.on('dragend',()=>{const c=mk.getLatLng();rp[key]=[c.lat,c.lng];save()});
+  return m}
+function initMap(){if(map){setTimeout(()=>map.invalidateSize(),60);return}map=mkMap($('#map'),'main')}
+$('#mcb').onclick=()=>{const p=$('#mp'),show=p.classList.contains('d-none');if(map2){map2.remove();map2=null}
+  p.classList.toggle('d-none',!show);if(show)map2=mkMap($('#map2'),cb)};
+$('#mb').addEventListener('hidden.bs.modal',()=>{if(map2){map2.remove();map2=null}$('#mp').classList.add('d-none')});
 
 /* ---------- envoi ---------- */
 $('#send').onclick=async()=>{if(!valid(3))return;const btn=$('#send');
