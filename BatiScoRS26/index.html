@@ -95,7 +95,8 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <div class="col-xl-6">
       <div id="map" role="img" aria-label="Vue aérienne de l’établissement avec boussole"></div>
       <div class="small text-muted mt-1">Nord en haut de la carte. Le secteur orange indique les façades exposées Sud / Sud-Ouest / Ouest. Faites glisser la boussole par son centre pour la déplacer.<br/>
-         <i>Vous pouvez <b>passer en vue "Satellite"</b> en cliquant sur l'icône des calques en haut à droite.</i></div>
+         <i>Vous pouvez <b>passer en vue "Satellite"</b> en cliquant sur l'icône des calques en haut à droite.</i><br/>
+      Si la géolocalisation de votre établissement est erronée, merci de <a href="mailto:dosco7.ia82@ac-toulouse.fr">le signaler</a> pour correction.</div>
     </div>
   </div>
   <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" data-go="1">Suivant</button></div>
@@ -147,9 +148,10 @@ Essai sans n8n : ajouter ?demo à l'URL.
   <div class="modal-header"><h3 class="modal-title fs-5" id="mt"></h3><button type="button" class="btn btn-sm btn-outline-primary ms-2" id="mcb" title="Afficher la carte et la boussole" aria-label="Afficher la carte et la boussole">🧭 Afficher la carte</button><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
   <div class="modal-body" id="mbody">
      <div id="mp" class="d-none mb-4"><div id="map2" style="height:340px;border:1px solid #ccc"></div><div class="small text-muted mt-1">Faites glisser la boussole par son centre pour l’orienter sur ce bâtiment (nord en haut).</div></div>
-    <div class="mb-4"><label class="fw-bold" for="b1"><b>2.1.1</b> Identifiant Référentiel National du bâtiment (ID-RNB, <strong>si connu</strong>)</label>
-      <input id="b1" name="b1" class="form-control" placeholder="facultatif">
-      <div class="form-text">À rechercher sur <a href="https://rnb.beta.gouv.fr" target="_blank" rel="noopener">rnb.beta.gouv.fr</a>.</div></div>
+    <div class="mb-4"><label class="fw-bold" for="b1"><b>2.1.1</b> Identifiant Référentiel National du bâtiment</label>
+      <input id="b1" name="b1" class="form-control" placeholder="">
+      <div class="form-text">Également connu sous le nom de "ID-RNB". À compléter si connu. Vous pouvez le rechercher sur <a href="https://rnb.beta.gouv.fr" target="_blank" rel="noopener">rnb.beta.gouv.fr</a>.<br/>
+      Si un bâtiment présente plusieurs ID-RNB, n'en mentionner qu'un ici.</div></div>
     <div class="q" data-req><p class="fw-bold mb-2"><b>2.1.2</b> Destination(s) principale(s) du bâtiment</p><input type="text" id="b2" name="b2" class="form-control"><div class="form-text">Par exemple : Classes élémentaires, salle de restauration élèves, salle de motricité, etc.</div></div>
   </div>
   <div class="modal-footer"><button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary">Enregistrer le bâtiment</button></div>
