@@ -141,13 +141,13 @@ Essai sans n8n : ajouter ?demo à l'URL.
 
 <!-- MODALE BATIMENT -->
 <div class="modal fade" id="mb" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-scrollable"><form id="fb" class="modal-content" novalidate>
-  <div class="modal-header"><h3 class="modal-title fs-5" id="mt"></h3><button type="button" class="btn btn-sm btn-outline-primary ms-2" id="mcb" title="Afficher la carte et la boussole" aria-label="Afficher la carte et la boussole">🧭</button><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
+  <div class="modal-header"><h3 class="modal-title fs-5" id="mt"></h3><button type="button" class="btn btn-sm btn-outline-primary ms-2" id="mcb" title="Afficher la carte et la boussole" aria-label="Afficher la carte et la boussole">🧭 Afficher la carte</button><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
   <div class="modal-body" id="mbody">
      <div id="mp" class="d-none mb-4"><div id="map2" style="height:340px;border:1px solid #ccc"></div><div class="small text-muted mt-1">Faites glisser la boussole par son centre pour l’orienter sur ce bâtiment (nord en haut).</div></div>
     <div class="mb-4"><label class="fw-bold" for="b1"><b>2.1.1</b> Identifiant Référentiel National du bâtiment (ID-RNB, <strong>si connu</strong>)</label>
       <input id="b1" name="b1" class="form-control" placeholder="facultatif">
       <div class="form-text">À rechercher sur <a href="https://rnb.beta.gouv.fr" target="_blank" rel="noopener">rnb.beta.gouv.fr</a>.</div></div>
-    <div class="q" data-req><p class="fw-bold mb-2"><b>2.1.2</b> Destination(s) principale(s) du bâtiment</p><input type="text" id="b2" name="b2" class="form-control"></div>
+    <div class="q" data-req><p class="fw-bold mb-2"><b>2.1.2</b> Destination(s) principale(s) du bâtiment</p><input type="text" id="b2" name="b2" class="form-control"><div class="form-text">Par exemple : Classes élémentaires, salle de restauration élèves, salle de motricité, etc.</div></div>
   </div>
   <div class="modal-footer"><button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary">Enregistrer le bâtiment</button></div>
 </form></div></div>
@@ -250,9 +250,10 @@ function mkMap(el,key){const[lat,lon]=ll(E.coord_x,E.coord_y);
   mk.on('dragend',()=>{const c=mk.getLatLng();rp[key]=[c.lat,c.lng];save()});
   return m}
 function initMap(){if(map){setTimeout(()=>map.invalidateSize(),60);return}map=mkMap($('#map'),'main')}
+const mcbTxt=s=>$('#mcb').textContent='🧭 '+(s?'Masquer la carte':'Afficher la carte');
 $('#mcb').onclick=()=>{const p=$('#mp'),show=p.classList.contains('d-none');if(map2){map2.remove();map2=null}
-  p.classList.toggle('d-none',!show);if(show)map2=mkMap($('#map2'),cb)};
-$('#mb').addEventListener('hidden.bs.modal',()=>{if(map2){map2.remove();map2=null}$('#mp').classList.add('d-none')});
+  p.classList.toggle('d-none',!show);if(show)map2=mkMap($('#map2'),cb);mcbTxt(show)};
+$('#mb').addEventListener('hidden.bs.modal',()=>{if(map2){map2.remove();map2=null}$('#mp').classList.add('d-none');mcbTxt(false)});
 
 /* ---------- envoi ---------- */
 $('#send').onclick=async()=>{if(!valid(3))return;const btn=$('#send');
