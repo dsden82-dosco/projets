@@ -48,7 +48,7 @@ POST CFG.POST (JSON)      -> {uuid, uai, date, confort:{Question_1_1,Question_1_
 Essai sans n8n : ajouter ?demo à l'URL.
 -->
 <header><div class="container-xl py-3 d-flex align-items-center gap-3">
-  <div class="fw-bold text-uppercase small lh-sm">Education<br>Nationale</div>
+  <div class="fw-bold text-uppercase small lh-sm">Éducation<br>Nationale</div>
   <div class="border-start ps-3"><div class="fw-bold">Auto-évaluation de la vulnérabilité du bâti des écoles et EPLE face aux vagues de chaleur</div>
   <div class="small text-muted">DSDEN de Tarn-et-Garonne</div></div>
 </div></header>
@@ -117,7 +117,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <div class="q"><p><b>3.1</b> Après utilisation de la grille d’évaluation (partie 1), le classement <b>confort thermique global</b> de votre établissement est :</p>
       <div id="res"><span class="pill Correct">Correct</span> <span class="pill Mauvais">Mauvais</span> <span class="pill TM">Très Mauvais</span></div></div>
     <p class="small fst-italic text-muted">Exemples de travaux sur le bâti : isolation, végétalisation, îlot de fraîcheur, store, volet, brise-soleil, climatisation, double vitrage, pompe à chaleur, revêtement clair, films de protection, brasseur d’air…</p>
-    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>d'ors et déjà prévus</b> par la collectivité ?</p><div data-yn="q32"></div></div>
+    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>d'ores et déjà prévus</b> par la collectivité ?</p><div data-yn="q32"></div></div>
     <div class="q d-none" data-if="q32=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d32" class="form-control" rows="3"></textarea></div>
     <div class="q" data-req><p><b>3.3</b> Selon vous, des travaux d’adaptation aux fortes chaleurs sont-ils <b>à prévoir à l'avenir</b> par la collectivité ?</p><div data-yn="q33"></div></div>
     <div class="q d-none" data-if="q33=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d33" class="form-control" rows="3"></textarea></div>
@@ -165,7 +165,7 @@ const BQ=[
 ['8','2.1.8','Ce bâtiment dispose-t-il d’<b>éléments permettant l’ombrage total des façades exposées au soleil l’après-midi</b> (auvent, arbres de grande hauteur…) ?']];
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const P=new URLSearchParams(location.search);
-return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/><circle r="16" fill="#fff" fill-opacity=".01" style="pointer-events:auto;cursor:move"><title>Glisser pour déplacer la boussole</title></circle></svg>'}
+let E={},bat={},cur=0,nbPrev='',cb=0,map,map2,rp={},resultat='';
 
 /* ---------- construction ---------- */
 const yn=(n,o=['OUI','NON'])=>o.map((v,i)=>`<input type="radio" name="${n}" id="${n}_${i}" value="${v}"><label for="${n}_${i}">${v}</label>`).join('');
@@ -212,7 +212,7 @@ function valid(n){
   if(n==2){if(!check($('#p2')))return false;const m=[...Array(+$('#nb').value)].some((_,i)=>!bat[i+1]);$('#bmsg').classList.toggle('d-none',!m);if(m)return false}
   if(n==3)return check($('#f3'));return true}
 $$('[data-go]').forEach(b=>b.onclick=()=>{const d=+b.dataset.go;if(d>0){if(!valid(cur))return;$(`.step[data-s="${cur}"]`).classList.add('ok')}go(cur+d);save()});
-function showRes(){$$('#res .pill').forEach(p=>p.classList.toggle('on',p.textContent===resultat));$$('#res .pill').forEach(p=>{if(p.classList.contains('TM')&&resultat!=='Très Mauvais')p.classList.remove('on')});$('#res2').textContent=resultat}
+function showRes(){$$('#res .pill').forEach(p=>p.classList.toggle('on',p.textContent===resultat));$$('#res .pill').forEach(p=>{if(p.classList.contains('TM')&&resultat!=='Très Mauvais')p.classList.remove('on')})
 
 /* ---------- bâtiments ---------- */
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -236,7 +236,7 @@ function rose(){const q=(a,r)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/
   for(let a=0;a<360;a+=22.5)s+=`<line x1="${q(a,100).split(',')[0]}" y1="${q(a,100).split(',')[1]}" x2="${q(a,a%90?106:112).split(',')[0]}" y2="${q(a,a%90?106:112).split(',')[1]}" stroke="#fff" stroke-width="2"/>`;
   s+='<path d="M0,-100 L-8,-76 L0,-84 L8,-76Z" fill="#e1000f" stroke="#fff"/><g class="hl">';
   [['N',0],['NE',45],['E',90],['SE',135],['S',180],['SO',225],['O',270],['NO',315]].forEach(([t,a])=>{const[x,y]=q(a,t.length>1?96:92).split(',');const[X,Y]=q(a,116).split(',');s+=`<text x="${X}" y="${Y}">${t}</text>`});
-  return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/></svg>'}
+  return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/><circle r="16" fill="#fff" fill-opacity=".01" style="pointer-events:auto;cursor:move"><title>Glisser pour déplacer la boussole</title></circle></svg>'}
 function mkMap(el,key){const[lat,lon]=ll(E.coord_x,E.coord_y);
   if(!isFinite(lat)){el.innerHTML='<div class="p-4 text-muted">Géolocalisation indisponible pour cet établissement.</div>';return null}
   const ign=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'}),
