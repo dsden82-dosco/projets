@@ -93,7 +93,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <div class="col-xl-6">
       <div id="map" role="img" aria-label="Vue aérienne de l’établissement avec boussole"></div>
       <div class="small text-muted mt-1">Nord en haut de la carte. Le secteur orange indique les façades exposées Sud / Sud-Ouest / Ouest. Faites glisser la boussole par son centre pour la déplacer.<br/>
-         <i>Vous pouvez <b>passer en vue "Plan"</b> en cliquant sur l'icône des calques en haut à droite.</i></div>
+         <i>Vous pouvez <b>passer en vue "Satellite"</b> en cliquant sur l'icône des calques en haut à droite.</i></div>
     </div>
   </div>
   <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" data-go="1">Suivant</button></div>
@@ -244,7 +244,7 @@ function mkMap(el,key){const[lat,lon]=ll(E.coord_x,E.coord_y);
   plan=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'}),
   esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'});
   const p=rp[key]||rp.main||[lat,lon];
-  const m=L.map(el,{layers:[ign]}).setView(p,18);
+  const m=L.map(el,{layers:[plan]}).setView(p,18);
   L.control.layers({'Vue aérienne IGN':ign,'Plan IGN':plan,'Vue satellite Esri':esri}).addTo(m);
   const mk=L.marker(p,{draggable:true,icon:L.divIcon({className:'rose-ico',html:rose(),iconSize:[250,250],iconAnchor:[125,125]})}).addTo(m);
   mk.on('dragend',()=>{const c=mk.getLatLng();rp[key]=[c.lat,c.lng];save()});
