@@ -36,6 +36,7 @@ header{background:#fff;border-bottom:1px solid #ddd;border-top:5px solid;border-
 .pill.on.Mauvais{background:#ffe9d0;border-color:#b34000;color:#b34000}
 .pill.on.TM{background:#ffe9e9;border-color:var(--rm);color:var(--rm)}
 .hl text{paint-order:stroke;stroke:#000;stroke-width:3px;fill:#fff;font:700 12px Arial;text-anchor:middle;dominant-baseline:middle}
+mark{background:#fff3a3;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .leaflet-marker-icon.rose-ico{pointer-events:none!important}
 </style>
 </head>
@@ -87,9 +88,9 @@ Essai sans n8n : ajouter ?demo à l'URL.
   <h2>1. Confort thermique global</h2>
   <div class="row g-4">
     <div class="col-xl-6"><form id="f1">
-      <div class="q" data-req><p><b>1.1</b> Votre établissement présente-t-il des locaux d’enseignement dont les façades sont exposées Sud / Ouest / Sud-Ouest ?</p><div data-yn="Question_1_1"></div></div>
-      <div class="q" data-req><p><b>1.2</b> Dispose-t-il d’équipements ou de dispositifs favorisant la baisse de température intérieure et en état de fonctionner ? (climatiseurs, rafraîchisseurs d'air...)</p><div data-yn="Question_1_2"></div></div>
-      <div class="q" data-req><p><b>1.3</b> Présente-t-il des protections extérieures des façades Sud / Ouest / Sud-Ouest et en état de fonctionner ? (stores, volets, auvents...)</p><div data-yn="Question_1_3"></div></div>
+      <div class="q" data-req><p><b>1.1</b> Votre établissement présente-t-il des locaux d’enseignement dont les façades sont <mark>exposées Sud / Ouest / Sud-Ouest</mark> ?</p><div data-yn="Question_1_1"></div></div>
+      <div class="q" data-req><p><b>1.2</b> Dispose-t-il d’<mark>équipements ou de dispositifs favorisant la baisse de température intérieure</mark> et en état de fonctionner ? (climatiseurs, rafraîchisseurs d'air...)</p><div data-yn="Question_1_2"></div></div>
+      <div class="q" data-req><p><b>1.3</b> Présente-t-il des <mark>protections extérieures des façades Sud / Ouest / Sud-Ouest</mark> et en état de fonctionner ? (stores, volets, auvents...)</p><div data-yn="Question_1_3"></div></div>
     </form></div>
     <div class="col-xl-6">
       <div id="map" role="img" aria-label="Vue aérienne de l’établissement avec boussole"></div>
@@ -104,7 +105,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
 <section class="page" id="p2">
   <h2>2. Détail par bâtiment</h2>
   <div class="q" data-req>
-    <label class="fw-bold mb-2" for="nb">2.0 De combien de bâtiments distincts est composé votre établissement ?</label>
+    <label class="fw-bold mb-2" for="nb">2.0 De combien de <mark>bâtiments distincts</mark> est composé votre établissement ?</label>
     <select id="nb" class="form-select w-auto"><option value="">Choisir…</option></select>
   </div>
   <ul id="bl" class="list-group mb-2"></ul>
@@ -116,15 +117,15 @@ Essai sans n8n : ajouter ?demo à l'URL.
 <section class="page" id="p3">
   <h2>3. Travaux d’adaptation et audit</h2>
   <form id="f3">
-    <div class="q"><p><b>3.1</b> Après utilisation de la grille d’évaluation (partie 1), le classement <b>confort thermique global</b> de votre établissement est :</p>
+    <div class="q"><p><b>3.1</b> Après utilisation de la grille d’évaluation (partie 1), le classement <mark>confort thermique global</mark> de votre établissement est :</p>
       <div id="res"><span class="pill Correct">Correct</span> <span class="pill Mauvais">Mauvais</span> <span class="pill TM">Très Mauvais</span></div></div>
-    <p class="small fst-italic text-muted">Exemples de travaux sur le bâti : isolation, végétalisation, îlot de fraîcheur, store, volet, brise-soleil, climatisation, double vitrage, pompe à chaleur, revêtement clair, films de protection, brasseur d’air…</p>
-    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>d'ores et déjà prévus</b> par la collectivité ?</p><div data-yn="q32"></div></div>
+    <p class="small fst-italic text-muted"><strong>Pour les questions ci-dessous, voici quelques exemples de travaux sur le bâti :</strong> isolation, végétalisation, îlot de fraîcheur, store, volet, brise-soleil, climatisation, double vitrage, pompe à chaleur, revêtement clair, films de protection, brasseur d’air…</p>
+    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <mark>d'ores et déjà prévus</mark> par la collectivité ?</p><div data-yn="q32"></div></div>
     <div class="q d-none" data-if="q32=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d32" class="form-control" rows="3"></textarea></div>
-    <div class="q" data-req><p><b>3.3</b> Selon vous, des travaux d’adaptation aux fortes chaleurs sont-ils <b>à prévoir à l'avenir</b> par la collectivité ?</p><div data-yn="q33"></div></div>
+    <div class="q" data-req><p><b>3.3</b> Selon vous, des travaux d’adaptation aux fortes chaleurs sont-ils <mark>à prévoir à l'avenir</mark> par la collectivité ?</p><div data-yn="q33"></div></div>
     <div class="q d-none" data-if="q33=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d33" class="form-control" rows="3"></textarea></div>
-    <div class="q" data-req><p><b>3.4</b> Un audit énergétique a-t-il été établi par la collectivité ?</p><div data-yn="q34" data-opts="OUI,NON,NE SAIT PAS"></div></div>
-    <div class="q d-none" data-if="q34=OUI" data-req><label class="form-label"><b>3.5</b> Quelles sont les préconisations de cet audit ?</label><textarea name="q35" class="form-control" rows="4"></textarea></div>
+    <div class="q" data-req><p><b>3.4</b> Un audit énergétique a-t-il été <mark>déjà établi</mark> par la collectivité ?</p><div data-yn="q34" data-opts="OUI,NON,NE SAIT PAS"></div></div>
+    <div class="q d-none" data-if="q34=OUI" data-req><label class="form-label"><b>3.5</b> Quelles sont les <mark>préconisations</mark> de cet audit ?</label><textarea name="q35" class="form-control" rows="4"></textarea></div>
   </form>
   <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" id="send">Envoyer mes réponses</button></div>
 </section>
@@ -159,12 +160,12 @@ Essai sans n8n : ajouter ?demo à l'URL.
 const CFG={GET:'https://n8n.incubateur.education.gouv.fr/webhook/461d7a68-7faa-4aba-bf08-9600489d2d0a',POST:'https://n8n.incubateur.education.gouv.fr/webhook/4c19dec3-2eb6-40a2-b3b3-bcce140710a3'};
 const OMB=['AUVENT','ARBRES DE GRANDE HAUTEUR','BATIMENT(S) MITOYEN(S)','AUTRE'];
 const BQ=[
-['3','2.1.3','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <strong>exposées au sud</strong> ?'],
-['4','2.1.4','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <b>exposées au sud-ouest</b> ?'],
-['5','2.1.5','Ce bâtiment dispose-t-il d’<b>équipements favorisant l’élévation de la température intérieure</b> <i>(présence de verrière, patio, etc.)</i> ?'],
-['6','2.1.6','Ce bâtiment dispose-t-il d’<b>équipements ou dispositifs liés au renouvellement d’air, améliorant le confort d’été</b> ? <i>(ventilation mécanique, brasseurs d’air, ventilateurs sur pied, ouverture possible des fenêtres tôt le matin et/ou tard le soir…)</i>','Préciser ici par exemple si les équipements sont en état fonctionnel, en nombre suffisant, si l’organisation et la configuration des locaux permettent la mise en place de l’ouverture des fenêtres la nuit, etc.'],
-['7','2.1.7','Ce bâtiment dispose-t-il d’<b>équipements de protection extérieure des façades</b> (stores, volets, brise-soleil…) ?','Préciser ici les équipements existants (stores extérieurs, volets roulants…). Les équipements situés à l’intérieur (type rideau) ne doivent pas être pris en compte.'],
-['8','2.1.8','Ce bâtiment dispose-t-il d’<b>éléments permettant l’ombrage total des façades exposées au soleil l’après-midi</b> (auvent, arbres de grande hauteur…) ?']];
+['3','2.1.3','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <mark>exposées au sud</mark> ?'],
+['4','2.1.4','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <mark>exposées au sud-ouest</mark> ?'],
+['5','2.1.5','Ce bâtiment dispose-t-il d’<mark>équipements favorisant l’élévation de la température intérieure</mark> <i>(présence de verrière, patio, etc.)</i> ?'],
+['6','2.1.6','Ce bâtiment dispose-t-il d’<mark>équipements ou dispositifs liés au renouvellement d’air, améliorant le confort d’été</mark> ? <i>(ventilation mécanique, brasseurs d’air, ventilateurs sur pied, ouverture possible des fenêtres tôt le matin et/ou tard le soir…)</i>','Préciser ici par exemple si les équipements sont en état fonctionnel, en nombre suffisant, si l’organisation et la configuration des locaux permettent la mise en place de l’ouverture des fenêtres la nuit, etc.'],
+['7','2.1.7','Ce bâtiment dispose-t-il d’<mark>équipements de protection extérieure des façades</mark> (stores, volets, brise-soleil…) ?','Préciser ici les équipements existants (stores extérieurs, volets roulants…). Les équipements situés à l’intérieur (type rideau) ne doivent pas être pris en compte.'],
+['8','2.1.8','Ce bâtiment dispose-t-il d’<mark>éléments permettant l’ombrage total des façades exposées au soleil l’après-midi</mark> (auvent, arbres de grande hauteur…) ?']];
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const P=new URLSearchParams(location.search);
 let E={},bat={},cur=0,nbPrev='',cb=0,map,map2,rp={},resultat='';
