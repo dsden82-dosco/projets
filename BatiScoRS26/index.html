@@ -212,7 +212,7 @@ function valid(n){
   if(n==2){if(!check($('#p2')))return false;const m=[...Array(+$('#nb').value)].some((_,i)=>!bat[i+1]);$('#bmsg').classList.toggle('d-none',!m);if(m)return false}
   if(n==3)return check($('#f3'));return true}
 $$('[data-go]').forEach(b=>b.onclick=()=>{const d=+b.dataset.go;if(d>0){if(!valid(cur))return;$(`.step[data-s="${cur}"]`).classList.add('ok')}go(cur+d);save()});
-function showRes(){$$('#res .pill').forEach(p=>p.classList.toggle('on',p.textContent===resultat));$$('#res .pill').forEach(p=>{if(p.classList.contains('TM')&&resultat!=='Très Mauvais')p.classList.remove('on')})
+function showRes(){$$('#res .pill').forEach(p=>p.classList.toggle('on',p.textContent===resultat));$$('#res .pill').forEach(p=>{if(p.classList.contains('TM')&&resultat!=='Très Mauvais')p.classList.remove('on')})}
 
 /* ---------- bâtiments ---------- */
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
