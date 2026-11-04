@@ -229,7 +229,7 @@ function ll(x,y){x=+x;y=+y;if(!isFinite(x)||!isFinite(y))return[NaN,NaN];if(Math
   let p=2*Math.atan(Math.exp(L))-Math.PI/2;for(let i=0;i<10;i++){const s=e*Math.sin(p);p=2*Math.atan(Math.pow((1+s)/(1-s),e/2)*Math.exp(L))-Math.PI/2}
   return[p*180/Math.PI,3+g/n*180/Math.PI]}
 function rose(){const q=(a,r)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/180)].map(v=>v.toFixed(1)).join(',');
-  let s='<svg viewBox="-125 -125 250 250" width="250" height="250"><path d="M0,0 L'+q(157.5,100)+' A100,100 0 0 1 '+q(292.5,100)+' Z" fill="#ff9900" fill-opacity=".3" stroke="#ff9900" stroke-width="1.5"/><circle r="100" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M0,-100V100M-100,0H100" stroke="#fff" stroke-opacity=".7"/>';
+  let s='<svg viewBox="-125 -125 250 250" width="250" height="250" style="filter:drop-shadow(0 0 2px #000)"><path d="M0,0 L'+q(157.5,100)+' A100,100 0 0 1 '+q(292.5,100)+' Z" fill="#ff9900" fill-opacity=".3" stroke="#ff9900" stroke-width="1.5"/><circle r="100" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M0,-100V100M-100,0H100" stroke="#fff" stroke-opacity=".7"/>';
   for(let a=0;a<360;a+=22.5)s+=`<line x1="${q(a,100).split(',')[0]}" y1="${q(a,100).split(',')[1]}" x2="${q(a,a%90?106:112).split(',')[0]}" y2="${q(a,a%90?106:112).split(',')[1]}" stroke="#fff" stroke-width="2"/>`;
   s+='<path d="M0,-100 L-8,-76 L0,-84 L8,-76Z" fill="#e1000f" stroke="#fff"/><g class="hl">';
   [['N',0],['NE',45],['E',90],['SE',135],['S',180],['SO',225],['O',270],['NO',315]].forEach(([t,a])=>{const[x,y]=q(a,t.length>1?96:92).split(',');const[X,Y]=q(a,116).split(',');s+=`<text x="${X}" y="${Y}">${t}</text>`});
@@ -237,9 +237,10 @@ function rose(){const q=(a,r)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/
 function initMap(){if(map){setTimeout(()=>map.invalidateSize(),60);return}
   const[lat,lon]=ll(E.coord_x,E.coord_y);if(!isFinite(lat)){$('#map').innerHTML='<div class="p-4 text-muted">Géolocalisation indisponible pour cet établissement.</div>';return}
   const ign=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'}),
-  esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'});
+  esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'}),
+  plan=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'});
   map=L.map('map',{layers:[ign]}).setView([lat,lon],18);
-  L.control.layers({'Vue aérienne IGN':ign,'Vue satellite Esri':esri}).addTo(map);
+  L.control.layers({'Vue aérienne IGN':ign,'Plan IGN':plan,'Vue satellite Esri':esri}).addTo(map);
   L.marker([lat,lon],{interactive:false,keyboard:false,icon:L.divIcon({className:'',html:rose(),iconSize:[250,250],iconAnchor:[125,125]})}).addTo(map)}
 
 /* ---------- envoi ---------- */
