@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vulnérabilité du bâti face aux vagues de chaleur</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
+<style>
+@font-face{font-family:Marianne;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/fonts/Marianne-Regular.woff2) format("woff2")}
+@font-face{font-family:Marianne;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/fonts/Marianne-Bold.woff2) format("woff2")}
+:root{--bf:#000091;--rm:#e1000f;--bs-primary:#000091;--bs-primary-rgb:0,0,145;--bs-body-font-family:Marianne,Arial,sans-serif}
+body{background:#f6f6f6;color:#161616}
+header{background:#fff;border-bottom:1px solid #ddd;border-top:5px solid;border-image:linear-gradient(90deg,#000091 33%,#fff 33% 66%,#e1000f 66%) 1}
+.btn-primary{--bs-btn-bg:#000091;--bs-btn-border-color:#000091;--bs-btn-hover-bg:#1212ff;--bs-btn-hover-border-color:#1212ff;--bs-btn-active-bg:#2323ff}
+.btn-outline-primary{--bs-btn-color:#000091;--bs-btn-border-color:#000091;--bs-btn-hover-bg:#000091}
+.side{position:sticky;top:1rem}
+.step{display:flex;gap:.6rem;align-items:center;padding:.55rem .75rem;border-left:4px solid #ddd;background:#fff;font-size:.9rem;white-space:nowrap}
+.step.on{border-color:var(--bf);font-weight:700;color:var(--bf)}
+.step.ok{border-color:#18753c}.step.ok .n::after{content:" ✓";color:#18753c}
+@media(max-width:991px){.step{border-left:0;border-bottom:4px solid #ddd}.step.on{border-color:var(--bf)}}
+.page{display:none;background:#fff;padding:1.5rem;border:1px solid #ddd}.page.on{display:block}
+.page h2{color:var(--bf);font-size:1.5rem;font-weight:700}
+.q{margin-bottom:1.5rem}
+.msg{display:none;color:var(--rm);font-size:.875rem;margin-top:.35rem}
+.q.err .msg{display:block}.q.err{border-left:4px solid var(--rm);padding-left:.75rem}
+.yn{position:relative;display:inline-flex;border:2px solid var(--bf);border-radius:2rem;overflow:hidden}
+.yn input{position:absolute;opacity:0}
+.yn label{padding:.35rem 1.2rem;cursor:pointer;font-weight:700;color:var(--bf);margin:0}
+.yn input:checked+label{background:var(--bf);color:#fff}
+.yn input:focus-visible+label{outline:3px solid #0a76f6;outline-offset:-3px}
+#map{height:420px;border:1px solid #ccc}
+.pill{display:inline-block;padding:.45rem 1rem;border-radius:2rem;border:2px solid #ccc;color:#aaa;font-weight:700;background:#f0f0f0}
+.pill.on.Correct{background:#b8fec9;border-color:#18753c;color:#18753c}
+.pill.on.Mauvais{background:#ffe9d0;border-color:#b34000;color:#b34000}
+.pill.on.TM{background:#ffe9e9;border-color:var(--rm);color:var(--rm)}
+.hl text{paint-order:stroke;stroke:#000;stroke-width:3px;fill:#fff;font:700 12px Arial;text-anchor:middle;dominant-baseline:middle}
+</style>
+</head>
+<body>
+<!--
+CONTRAT n8n
+GET  CFG.GET + ?uuid=...  -> {uai, appellation, commune, coord_x, coord_y, nb_batiments?}
+POST CFG.POST (JSON)      -> {uuid, uai, date, confort:{Question_1_1,Question_1_2,Question_1_3,Resultat},
+   nb_batiments, batiments:[{Numero, ID_RNB, Destinations, Question_2_1_3..8, Commentaire_2_1_3..8, Ombrage_types[]}],
+   travaux:{q32,d32,q33,d33, colonne_Q, colonne_R, colonne_S}}
+Essai sans n8n : ajouter ?demo à l'URL.
+-->
+<header><div class="container-xl py-3 d-flex align-items-center gap-3">
+  <div class="fw-bold text-uppercase small lh-sm">République<br>Française</div>
+  <div class="border-start ps-3"><div class="fw-bold">Évaluation de la vulnérabilité du bâti des écoles et EPLE face aux vagues de chaleur</div>
+  <div class="small text-muted">Éducation nationale, Tarn-et-Garonne</div></div>
+</div></header>
+
+<main class="container-xl py-4">
+<div id="load" class="alert alert-info">Chargement de votre établissement…</div>
+<div id="err" class="alert alert-danger d-none"></div>
+<div id="app" class="row g-4 d-none">
+<aside class="col-lg-3"><nav class="side" aria-label="Sommaire"><ol id="steps" class="list-unstyled d-flex flex-lg-column gap-2 overflow-auto m-0 p-0"></ol></nav></aside>
+<div class="col-lg-9">
+
+<!-- 0 INTRODUCTION -->
+<section class="page on" id="p0">
+  <h2>Questionnaire en ligne</h2>
+  <div id="draft" class="alert alert-info d-none">Un brouillon de vos réponses a été restauré sur cet appareil. <button type="button" class="btn btn-link btn-sm p-0 align-baseline" id="reset">Recommencer à zéro</button></div>
+  <div class="border p-3 mb-4 bg-light">
+    <div class="small text-muted">Établissement</div>
+    <div class="fw-bold fs-5" id="e-nom"></div>
+    <div><span id="e-com"></span> · UAI <b id="e-uai"></b></div>
+  </div>
+  <h3 class="fs-5">Sommaire</h3>
+  <ol>
+    <li>Confort thermique global</li>
+    <li>Détail par bâtiment</li>
+    <li>Travaux d’adaptation et audit</li>
+  </ol>
+  <p><b>Durée estimée :</b> environ 10 à 20 minutes.</p>
+  <p class="text-muted small">Toutes les questions sont obligatoires, sauf l’identifiant du bâtiment (2.1.1) et les commentaires.</p>
+  <div class="text-end"><button class="btn btn-primary" data-go="1">Commencer</button></div>
+</section>
+
+<!-- 1 CONFORT THERMIQUE -->
+<section class="page" id="p1">
+  <h2>1. Confort thermique global</h2>
+  <div class="row g-4">
+    <div class="col-xl-6"><form id="f1">
+      <div class="q" data-req><p><b>1.1</b> Votre établissement présente-t-il des locaux d’enseignement dont les façades sont exposées Sud / Ouest / Sud-Ouest ?</p><div data-yn="Question_1_1"></div></div>
+      <div class="q" data-req><p><b>1.2</b> Dispose-t-il d’équipements ou de dispositifs favorisant la baisse de température intérieure et en état de fonctionner ?</p><div data-yn="Question_1_2"></div></div>
+      <div class="q" data-req><p><b>1.3</b> Présente-t-il des protections extérieures des façades Sud / Ouest / Sud-Ouest et en état de fonctionner ?</p><div data-yn="Question_1_3"></div></div>
+    </form></div>
+    <div class="col-xl-6">
+      <div id="map" role="img" aria-label="Vue aérienne de l’établissement avec boussole"></div>
+      <div class="small text-muted mt-1">Nord en haut de la carte. Le secteur orange indique les façades exposées Sud / Sud-Ouest / Ouest.</div>
+    </div>
+  </div>
+  <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" data-go="1">Suivant</button></div>
+</section>
+
+<!-- 2 BATIMENTS -->
+<section class="page" id="p2">
+  <h2>2. Détail par bâtiment</h2>
+  <div class="q" data-req>
+    <label class="fw-bold mb-2" for="nb">2.0 De combien de bâtiments distincts est composé votre établissement ?</label>
+    <select id="nb" class="form-select w-auto"><option value="">Choisir…</option></select>
+  </div>
+  <ul id="bl" class="list-group mb-2"></ul>
+  <div id="bmsg" class="alert alert-warning d-none">Veuillez compléter chaque bâtiment avant de continuer.</div>
+  <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" data-go="1">Suivant</button></div>
+</section>
+
+<!-- 3 TRAVAUX -->
+<section class="page" id="p3">
+  <h2>3. Travaux d’adaptation et audit</h2>
+  <form id="f3">
+    <div class="q"><p><b>3.1</b> Après utilisation de la grille d’évaluation (partie 1), le classement <b>confort thermique global</b> de votre établissement est :</p>
+      <div id="res"><span class="pill Correct">Correct</span> <span class="pill Mauvais">Mauvais</span> <span class="pill TM">Très Mauvais</span></div></div>
+    <p class="small fst-italic text-muted">Exemples de travaux sur le bâti : isolation, végétalisation, îlot de fraîcheur, store, volet, brise-soleil, climatisation, double vitrage, pompe à chaleur, revêtement clair, films de protection, brasseur d’air…</p>
+    <div class="q" data-req><p><b>3.2</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>prévus</b> par la collectivité ?</p><div data-yn="q32"></div></div>
+    <div class="q d-none" data-if="q32=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d32" class="form-control" rows="3"></textarea></div>
+    <div class="q" data-req><p><b>3.3</b> Des travaux d’adaptation aux fortes chaleurs sont-ils <b>à prévoir</b> par la collectivité ?</p><div data-yn="q33"></div></div>
+    <div class="q d-none" data-if="q33=OUI" data-req><label class="form-label">Lesquels ?</label><textarea name="d33" class="form-control" rows="3"></textarea></div>
+    <div class="q" data-req><p><b>3.4</b> Un audit énergétique a-t-il été établi par la collectivité ?</p><div data-yn="q34" data-opts="OUI,NON,NE SAIT PAS"></div></div>
+    <div class="q d-none" data-if="q34=OUI" data-req><label class="form-label"><b>3.5</b> Quelles sont les préconisations de cet audit ?</label><textarea name="q35" class="form-control" rows="4"></textarea></div>
+  </form>
+  <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-primary" data-go="-1">Précédent</button><button class="btn btn-primary" id="send">Envoyer mes réponses</button></div>
+</section>
+
+<!-- 4 CONFIRMATION -->
+<section class="page" id="p4">
+  <h2>Merci, vos réponses ont bien été transmises</h2>
+  <p>Le classement confort thermique global de votre établissement est : <b id="res2"></b>.</p>
+  <p class="text-muted small">Vous pouvez fermer cette page.</p>
+</section>
+
+</div></div>
+</main>
+
+<!-- MODALE BATIMENT -->
+<div class="modal fade" id="mb" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-lg modal-dialog-scrollable"><form id="fb" class="modal-content" novalidate>
+  <div class="modal-header"><h3 class="modal-title fs-5" id="mt"></h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button></div>
+  <div class="modal-body" id="mbody">
+    <div class="mb-4"><label class="fw-bold" for="b1"><b>2.1.1</b> Identifiant Référentiel National du bâtiment (ID-RNB, si connu)</label>
+      <input id="b1" name="b1" class="form-control" placeholder="ex. : XXXX-XXXX-XXXX">
+      <div class="form-text">À rechercher sur <a href="https://rnb.beta.gouv.fr" target="_blank" rel="noopener">rnb.beta.gouv.fr</a>.</div></div>
+    <div class="q" data-req><p class="fw-bold mb-2"><b>2.1.2</b> Destination(s) principale(s) du bâtiment</p><input type="text" id="b2" name="b2" class="form-control"></div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary">Enregistrer le bâtiment</button></div>
+</form></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const CFG={GET:'https://VOTRE-N8N/webhook/bati-chaleur/etablissement',POST:'https://VOTRE-N8N/webhook/bati-chaleur/reponses'};
+const OMB=['AUVENT','ARBRES DE GRANDE HAUTEUR','BATIMENT(S) MITOYEN(S)','AUTRE'];
+const BQ=[
+['3','2.1.3','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <b>exposées au sud</b> ?'],
+['4','2.1.4','Ce bâtiment présente-t-il des salles de classe ou d’activité principalement <b>exposées au sud-ouest</b> ?'],
+['5','2.1.5','Ce bâtiment dispose-t-il d’<b>équipements favorisant l’élévation de la température intérieure</b> <i>(présence de verrière, patio, etc.)</i> ?'],
+['6','2.1.6','Ce bâtiment dispose-t-il d’<b>équipements ou dispositifs liés au renouvellement d’air, améliorant le confort d’été</b> ? <i>(ventilation mécanique, brasseurs d’air, ventilateurs sur pied, ouverture possible des fenêtres tôt le matin et/ou tard le soir…)</i>','Préciser ici par exemple si les équipements sont en état fonctionnel, en nombre suffisant, si l’organisation et la configuration des locaux permettent la mise en place de l’ouverture des fenêtres la nuit, etc.'],
+['7','2.1.7','Ce bâtiment dispose-t-il d’<b>équipements de protection extérieure des façades</b> (stores, volets, brise-soleil…) ?','Préciser ici les équipements existants (stores extérieurs, volets roulants…). Les équipements situés à l’intérieur (type rideau) ne doivent pas être pris en compte.'],
+['8','2.1.8','Ce bâtiment dispose-t-il d’<b>éléments permettant l’ombrage total des façades exposées au soleil l’après-midi</b> (auvent, arbres de grande hauteur…) ?']];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const P=new URLSearchParams(location.search);
+let E={},bat={},cur=0,nbPrev='',cb=0,map,resultat='';
+
+/* ---------- construction ---------- */
+const yn=(n,o=['OUI','NON'])=>o.map((v,i)=>`<input type="radio" name="${n}" id="${n}_${i}" value="${v}"><label for="${n}_${i}">${v}</label>`).join('');
+const chk=(n,l,i)=>`<div class="form-check"><input class="form-check-input" type="checkbox" name="${n}" id="${n}${i}" value="${l}"><label class="form-check-label" for="${n}${i}">${l}</label></div>`;
+$('#mbody').insertAdjacentHTML('beforeend',BQ.map(([k,n,t,h])=>`
+  <div class="q" data-req><p class="fw-bold mb-2"><b>${n}</b> ${t}</p><div data-yn="b${k}"></div></div>
+  ${k=='8'?`<div class="q d-none" data-if="b8=OUI" data-req><p class="mb-1">Précisez :</p>${OMB.map((o,i)=>chk('b8x',o,i)).join('')}</div>`:''}
+  <div class="mb-4 ${k=='8'?'q':''}" ${k=='8'?'id="c8q" data-m="Précisez en commentaire l’élément « autre »."':''}><label class="form-label small" for="c${k}">Commentaire</label>
+  ${h?`<div class="form-text fst-italic mt-0 mb-1">${h}</div>`:''}<textarea id="c${k}" name="c${k}" class="form-control" rows="3"></textarea></div>`).join(''));
+$$('[data-yn]').forEach(d=>{d.className='yn';d.setAttribute('role','radiogroup');d.innerHTML=yn(d.dataset.yn,d.dataset.opts?d.dataset.opts.split(','):undefined)});
+$$('.q').forEach(q=>q.insertAdjacentHTML('beforeend',`<div class="msg">${q.dataset.m||'Réponse obligatoire.'}</div>`));
+$('#nb').insertAdjacentHTML('beforeend',[...Array(10)].map((_,i)=>`<option>${i+1}</option>`).join(''));
+const STEPS=['Introduction','Confort thermique global','Détail par bâtiment','Travaux et audit'];
+$('#steps').innerHTML=STEPS.map((s,i)=>`<li class="step" data-s="${i}"><span class="n">${i}</span>${s}</li>`).join('');
+
+/* ---------- utilitaires ---------- */
+function cond(){$$('[data-if]').forEach(e=>{const[n,v]=e.dataset.if.split('=');const c=document.querySelector(`[name="${n}"]:checked`);e.classList.toggle('d-none',!(c&&c.value===v))})}
+function check(root){let first=null;root.querySelectorAll('.q[data-req]').forEach(q=>{let ok=true;
+  if(!q.closest('.d-none')){const r=q.querySelectorAll('input[type=radio]'),c=q.querySelectorAll('input[type=checkbox]'),t=q.querySelector('textarea,select,input[type=text]');
+    if(r.length)ok=[...r].some(x=>x.checked);else if(c.length)ok=[...c].some(x=>x.checked);else if(t)ok=t.value.trim()!==''}
+  q.classList.toggle('err',!ok);if(!ok&&!first)first=q});
+  if(first)first.scrollIntoView({behavior:'smooth',block:'center'});return !first}
+const grab=f=>{const o={};new FormData(f).forEach((v,k)=>{o[k]=k in o?[].concat(o[k],v):v});o.b8x=[].concat(o.b8x||[]);return o};
+const fill=(f,o)=>{f.reset();for(const e of f.elements){if(!e.name)continue;const v=o[e.name];if(e.type=='radio')e.checked=v==e.value;else if(e.type=='checkbox')e.checked=(v||[]).includes(e.value);else e.value=v??''}cond()};
+const val=n=>(document.querySelector(`[name="${n}"]:checked`)||{}).value||'';
+const calc=(a,b,c)=>{const eq=b==='OUI',pr=c==='OUI';if(a==='NON')return eq?'Correct':'Mauvais';return eq&&pr?'Correct':(eq||pr)?'Mauvais':'Très Mauvais'};
+const KEY='bati_chaleur_'+(P.get('uuid')||'demo');
+function save(){try{localStorage.setItem(KEY,JSON.stringify({cur:Math.min(cur,3),f1:grab($('#f1')),f3:grab($('#f3')),nb:$('#nb').value,bat}))}catch{}}
+function restore(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d)return 0;
+  fill($('#f1'),d.f1);fill($('#f3'),d.f3);$('#nb').value=d.nb||'';nbPrev=$('#nb').value;bat=d.bat||{};renderB();
+  if(val('Question_1_1')&&val('Question_1_2')&&val('Question_1_3'))resultat=calc(val('Question_1_1'),val('Question_1_2'),val('Question_1_3'));
+  for(let i=0;i<d.cur;i++)$(`.step[data-s="${i}"]`).classList.add('ok');
+  $('#draft').classList.remove('d-none');return d.cur}catch{return 0}}
+$('#reset').onclick=()=>{try{localStorage.removeItem(KEY)}catch{}location.reload()};
+document.addEventListener('change',e=>{if(e.target.name)cond();e.target.closest('.q')?.classList.remove('err');save()});
+document.addEventListener('input',e=>{e.target.closest('.q')?.classList.remove('err');save()});
+
+/* ---------- navigation ---------- */
+function go(n){cur=n;$$('.page').forEach((p,i)=>p.classList.toggle('on',i==n));
+  $$('.step').forEach(s=>s.classList.toggle('on',+s.dataset.s==n));
+  if(n==1)initMap();if(n==3)showRes();scrollTo({top:0,behavior:'smooth'})}
+function valid(n){
+  if(n==1){if(!check($('#f1')))return false;resultat=calc(val('Question_1_1'),val('Question_1_2'),val('Question_1_3'))}
+  if(n==2){if(!check($('#p2')))return false;const m=[...Array(+$('#nb').value)].some((_,i)=>!bat[i+1]);$('#bmsg').classList.toggle('d-none',!m);if(m)return false}
+  if(n==3)return check($('#f3'));return true}
+$$('[data-go]').forEach(b=>b.onclick=()=>{const d=+b.dataset.go;if(d>0){if(!valid(cur))return;$(`.step[data-s="${cur}"]`).classList.add('ok')}go(cur+d);save()});
+function showRes(){$$('#res .pill').forEach(p=>p.classList.toggle('on',p.textContent===resultat));$$('#res .pill').forEach(p=>{if(p.classList.contains('TM')&&resultat!=='Très Mauvais')p.classList.remove('on')});$('#res2').textContent=resultat}
+
+/* ---------- bâtiments ---------- */
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const lab=i=>{const o=bat[i];return o?esc((o.b1||'').trim()||'Bâtiment '+i)+' - '+esc((o.b2||'').trim()):'Bâtiment '+i};
+function renderB(){const n=+$('#nb').value||0;$('#bl').innerHTML=[...Array(n)].map((_,k)=>{const i=k+1,ok=!!bat[i];return `<li class="list-group-item d-flex justify-content-between align-items-center"><span><b>${lab(i)}</b> <span class="badge ${ok?'text-bg-success':'text-bg-secondary'} ms-2">${ok?'Complété':'À compléter'}</span></span><button type="button" class="btn btn-sm ${ok?'btn-outline-primary':'btn-primary'}" data-b="${i}">${ok?'Modifier':'Compléter'}</button></li>`}).join('')}
+$('#nb').onchange=function(){const n=+this.value;const del=Object.keys(bat).filter(k=>k>n);
+  if(del.length&&!confirm('Les bâtiments au-delà du n°'+n+' seront supprimés. Continuer ?')){this.value=nbPrev;return}
+  del.forEach(k=>delete bat[k]);nbPrev=this.value;$('#bmsg').classList.add('d-none');renderB()};
+$('#bl').onclick=e=>{const b=e.target.closest('[data-b]');if(!b)return;cb=+b.dataset.b;$('#mt').textContent='Bâtiment '+cb;fill($('#fb'),bat[cb]||{});$$('#fb .q').forEach(q=>q.classList.remove('err'));bootstrap.Modal.getOrCreateInstance('#mb').show()};
+$('#fb').onsubmit=e=>{e.preventDefault();if(!check($('#fb')))return;
+  const o=grab(e.target);if(o.b8==='OUI'&&o.b8x.includes('AUTRE')&&!o.c8.trim()){$('#c8q').classList.add('err');return}
+  bat[cb]=o;renderB();save();bootstrap.Modal.getInstance('#mb').hide()};
+
+/* ---------- carte + boussole ---------- */
+function ll(x,y){x=+x;y=+y;if(!isFinite(x)||!isFinite(y))return[NaN,NaN];if(Math.abs(x)<=180&&Math.abs(y)<=90)return[y,x];
+  const n=.725607765053267,C=11754255.426096,e=.0818191910428158,dx=x-7e5,dy=12655612.049876-y,L=-Math.log(Math.hypot(dx,dy)/C)/n,g=Math.atan2(dx,dy);
+  let p=2*Math.atan(Math.exp(L))-Math.PI/2;for(let i=0;i<10;i++){const s=e*Math.sin(p);p=2*Math.atan(Math.pow((1+s)/(1-s),e/2)*Math.exp(L))-Math.PI/2}
+  return[p*180/Math.PI,3+g/n*180/Math.PI]}
+function rose(){const q=(a,r)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/180)].map(v=>v.toFixed(1)).join(',');
+  let s='<svg viewBox="-125 -125 250 250" width="250" height="250"><path d="M0,0 L'+q(157.5,100)+' A100,100 0 0 1 '+q(292.5,100)+' Z" fill="#ff9900" fill-opacity=".3" stroke="#ff9900" stroke-width="1.5"/><circle r="100" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M0,-100V100M-100,0H100" stroke="#fff" stroke-opacity=".7"/>';
+  for(let a=0;a<360;a+=22.5)s+=`<line x1="${q(a,100).split(',')[0]}" y1="${q(a,100).split(',')[1]}" x2="${q(a,a%90?106:112).split(',')[0]}" y2="${q(a,a%90?106:112).split(',')[1]}" stroke="#fff" stroke-width="2"/>`;
+  s+='<path d="M0,-100 L-8,-76 L0,-84 L8,-76Z" fill="#e1000f" stroke="#fff"/><g class="hl">';
+  [['N',0],['NE',45],['E',90],['SE',135],['S',180],['SO',225],['O',270],['NO',315]].forEach(([t,a])=>{const[x,y]=q(a,t.length>1?96:92).split(',');const[X,Y]=q(a,116).split(',');s+=`<text x="${X}" y="${Y}">${t}</text>`});
+  return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/></svg>'}
+function initMap(){if(map){setTimeout(()=>map.invalidateSize(),60);return}
+  const[lat,lon]=ll(E.coord_x,E.coord_y);if(!isFinite(lat)){$('#map').innerHTML='<div class="p-4 text-muted">Géolocalisation indisponible pour cet établissement.</div>';return}
+  const ign=L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'}),
+  esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'});
+  map=L.map('map',{layers:[ign]}).setView([lat,lon],18);
+  L.control.layers({'Vue aérienne IGN':ign,'Vue satellite Esri':esri}).addTo(map);
+  L.marker([lat,lon],{interactive:false,keyboard:false,icon:L.divIcon({className:'',html:rose(),iconSize:[250,250],iconAnchor:[125,125]})}).addTo(map)}
+
+/* ---------- envoi ---------- */
+$('#send').onclick=async()=>{if(!valid(3))return;const btn=$('#send');
+  const f=grab($('#f3')),q32=val('q32'),q33=val('q33'),q34=val('q34');
+  const travaux=[q32=='OUI'?'Prévus : '+f.d32.trim():'',q33=='OUI'?'À prévoir : '+f.d33.trim():''].filter(Boolean).join('\n')||'Aucun travaux prévu ni à prévoir';
+  const batiments=Object.keys(bat).sort((a,b)=>a-b).map(i=>{const o=bat[i],r={Numero:+i,ID_RNB:o.b1.trim(),Destinations:o.b2.trim()};
+    BQ.forEach(([k])=>{r['Question_2_1_'+k]=o['b'+k];r['Commentaire_2_1_'+k]=(o['c'+k]||'').trim()});r.Ombrage_types=o.b8==='OUI'?o.b8x:[];return r});
+  const body={uuid:P.get('uuid'),uai:E.uai,date:new Date().toISOString(),
+    confort:{Question_1_1:val('Question_1_1'),Question_1_2:val('Question_1_2'),Question_1_3:val('Question_1_3'),Resultat:resultat},
+    nb_batiments:+$('#nb').value,batiments,
+    travaux:{q32,d32:f.d32||'',q33,d33:f.d33||'',colonne_Q:travaux,colonne_R:q34,colonne_S:q34=='OUI'?f.q35.trim():''}};
+  btn.disabled=true;btn.textContent='Envoi en cours…';
+  try{if(!P.has('demo')){const r=await fetch(CFG.POST,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw 0}
+    else console.log(body);
+    try{localStorage.removeItem(KEY)}catch{}$(`.step[data-s="3"]`).classList.add('ok');go(4)}
+  catch{alert('L’envoi a échoué. Vos réponses sont conservées sur cette page : vous pouvez réessayer.');btn.disabled=false;btn.textContent='Envoyer mes réponses'}};
+
+/* ---------- démarrage ---------- */
+(async()=>{try{
+  if(P.has('demo'))E={uai:'0820001F',appellation:'Lycée Norman Foster',commune:'Beaumont-de-Lomagne',coord_x:1.0034,coord_y:43.8832};
+  else{const u=P.get('uuid');if(!u)throw 0;const r=await fetch(CFG.GET+'?uuid='+encodeURIComponent(u));if(!r.ok)throw 0;E=await r.json();if(!E.uai)throw 0}
+  $('#e-nom').textContent=E.appellation||'(appellation non renseignée)';$('#e-com').textContent=E.commune||'';$('#e-uai').textContent=E.uai;
+  $('#load').remove();$('#app').classList.remove('d-none');go(restore())}
+catch{$('#load').remove();const e=$('#err');e.classList.remove('d-none');e.textContent='Lien invalide ou expiré. Merci d’utiliser l’adresse personnalisée qui vous a été transmise.'}})();
+</script>
+</body>
+</html>
