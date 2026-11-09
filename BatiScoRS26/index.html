@@ -282,14 +282,14 @@ $('#send').onclick=async()=>{if(maintenant()>=T_REFUS){cloture();return}if(!vali
 
 /* ---------- clôture de la saisie (heure de Paris, UTC+1 le 9 novembre 2026) ---------- */
 const hh=s=>new Date('2026-11-09T'+s+':00+01:00').getTime();
-const T_MSG=hh('20:00'),T_FIN=hh('23:54'),T_REFUS=hh('23:59');
+const T_MSG=hh('16:30'),T_FIN=hh('23:54'),T_REFUS=hh('23:59');
 const maintenant=()=>P.has('demo')&&P.get('now')?hh(P.get('now')):Date.now();
 function cloture(){
   const n=maintenant(),b=$('#clo');
   if(n<T_MSG||cur===4){b.classList.add('d-none');return}
   const refus=n>=T_REFUS;
   b.className='alert '+(refus?'alert-danger':'alert-warning');
-  b.textContent=refus?'La saisie du formulaire est close depuis le lundi 9 novembre 2026 à 23h59. Les réponses ne sont plus acceptées.':n>=T_FIN?'La saisie du formulaire est close depuis 23h54. Les envois en cours sont acceptés jusqu’à 23h59.':'La saisie du formulaire sera close lundi 9 novembre 2026 à 17h00.';
+  b.textContent=refus?'La saisie du formulaire est close depuis le lundi 9 novembre 2026 à 23h59. Les réponses ne sont plus acceptées.':n>=T_FIN?'La saisie du formulaire est close depuis 23h54. Les envois en cours sont acceptés jusqu’à 23h59.':'La saisie du formulaire sera close lundi 9 novembre 2026 à 23h59.';
   if(refus)$('#send').disabled=true;
 }
 cloture();setInterval(cloture,15000);
