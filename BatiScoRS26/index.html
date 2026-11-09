@@ -57,6 +57,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
 </div></header>
 
 <main class="container-xl py-4">
+<div id="clo" class="alert alert-warning d-none" role="alert"></div>
 <div id="load" class="alert alert-info">Chargement de votre établissement…</div>
 <div id="err" class="alert alert-danger d-none"></div>
 <div id="app" class="row g-4 d-none">
@@ -264,7 +265,7 @@ $('#mcb').onclick=()=>{const p=$('#mp'),show=p.classList.contains('d-none');if(m
 $('#mb').addEventListener('hidden.bs.modal',()=>{if(map2){map2.remove();map2=null}$('#mp').classList.add('d-none');mcbTxt(false)});
 
 /* ---------- envoi ---------- */
-$('#send').onclick=async()=>{if(!valid(3))return;const btn=$('#send');
+$('#send').onclick=async()=>{if(maintenant()>=T_REFUS){cloture();return}if(!valid(3))return;const btn=$('#send');
   const f=grab($('#f3')),q32=val('q32'),q33=val('q33'),q34=val('q34');
   const travaux=[q32=='OUI'?'Prévus : '+f.d32.trim():'',q33=='OUI'?'À prévoir : '+f.d33.trim():''].filter(Boolean).join('\n')||'Aucun travaux prévu ni à prévoir';
   const batiments=Object.keys(bat).sort((a,b)=>a-b).map(i=>{const o=bat[i],r={Numero:+i,ID_RNB:o.b1.trim(),Destinations:o.b2.trim()};
@@ -274,11 +275,25 @@ $('#send').onclick=async()=>{if(!valid(3))return;const btn=$('#send');
     nb_batiments:+$('#nb').value,batiments,
     travaux:{q32,d32:f.d32||'',q33,d33:f.d33||'',colonne_Q:travaux,colonne_R:q34,colonne_S:q34=='OUI'?f.q35.trim():''}};
   btn.disabled=true;btn.textContent='Envoi en cours…';
-  try{if(!P.has('demo')){const r=await fetch(CFG.POST,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw 0}
+  try{if(!P.has('demo')){const r=await fetch(CFG.POST,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw r.status}
     else console.log(body);
     try{localStorage.removeItem(KEY)}catch{}$(`.step[data-s="3"]`).classList.add('ok');go(4)}
-  catch{alert('L’envoi a échoué. Vos réponses sont conservées sur cette page : vous pouvez réessayer.');btn.disabled=false;btn.textContent='Envoyer mes réponses'}};
+ catch(err){alert(err===403?'La saisie du formulaire est close : votre envoi n’a pas été accepté.':'L’envoi a échoué. Vos réponses sont conservées sur cette page : vous pouvez réessayer.');btn.disabled=false;btn.textContent='Envoyer mes réponses';cloture()}};
 
+/* ---------- clôture de la saisie (heure de Paris, UTC+1 le 9 novembre 2026) ---------- */
+const hh=s=>new Date('2026-11-09T'+s+':00+01:00').getTime();
+const T_MSG=hh('16:30'),T_FIN=hh('17:00'),T_REFUS=hh('17:05');
+const maintenant=()=>P.has('demo')&&P.get('now')?hh(P.get('now')):Date.now();
+function cloture(){
+  const n=maintenant(),b=$('#clo');
+  if(n<T_MSG||cur===4){b.classList.add('d-none');return}
+  const refus=n>=T_REFUS;
+  b.className='alert '+(refus?'alert-danger':'alert-warning');
+  b.textContent=refus?'La saisie du formulaire est close depuis le lundi 9 novembre 2026 à 17h00. Les réponses ne sont plus acceptées.':n>=T_FIN?'La saisie du formulaire est close depuis 17h00. Les envois en cours sont acceptés jusqu’à 17h05.':'La saisie du formulaire sera close lundi 9 novembre 2026 à 17h00.';
+  if(refus)$('#send').disabled=true;
+}
+cloture();setInterval(cloture,15000);
+   
 /* ---------- démarrage ---------- */
 (async()=>{try{
   if(P.has('demo'))E={uai:'0820001F',appellation:'Lycée Norman Foster',commune:'Beaumont-de-Lomagne',coord_x:1.0034,coord_y:43.8832};
