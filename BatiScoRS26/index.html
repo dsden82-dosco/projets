@@ -307,6 +307,16 @@ function showFerme() {
 cloture();setInterval(cloture,15000);
    
 /* ---------- démarrage ---------- */
+   // Fonction pour parser la date de manière sécurisée
+function parseNow() {
+  const nowStr = P.get('now');
+  if (!nowStr) return Date.now() / 1000;
+  const date = new Date(nowStr);
+  if (isNaN(date.getTime())) throw 'date_invalide';
+  return date.getTime() / 1000;
+}
+
+// Bloc de démarrage corrigé
 (async () => {
   try {
     if (P.has('demo')) {
@@ -320,15 +330,10 @@ cloture();setInterval(cloture,15000);
           if (r.status === 404) throw 'lien';
           if (!r.ok) throw 'indispo';
           E = await r.json();
-          // Ne forcer E.ouverte que si test-fermeture n'est pas présent
-          if (!P.has('test-fermeture')) {
-            E.ouverte = true;
-          }
+          if (!P.has('test-fermeture')) E.ouverte = true;
         } catch (err) {
           // Établissement par défaut en cas d'erreur
           const now = parseNow();
-          if (isNaN(now.getTime())) throw 'date_invalide'; // Gestion de l'erreur de date
-          const nowTs = now.getTime() / 1000;
           const finOffset = P.get('demo-campagne') ? parseInt(P.get('demo-campagne')) * 86400 : 86400 * 7;
           E = {
             uai: 'DEMO_UAI',
@@ -337,15 +342,13 @@ cloture();setInterval(cloture,15000);
             coord_x: 1.0034,
             coord_y: 43.8832,
             ouverte: true,
-            debut: nowTs - 86400,
-            fin: nowTs + finOffset
+            debut: now - 86400,
+            fin: now + finOffset
           };
         }
       } else {
         // Établissement par défaut si pas d'UUID
         const now = parseNow();
-        if (isNaN(now.getTime())) throw 'date_invalide';
-        const nowTs = now.getTime() / 1000;
         const finOffset = P.get('demo-campagne') ? parseInt(P.get('demo-campagne')) * 86400 : 86400 * 7;
         E = {
           uai: 'DEMO_UAI',
@@ -354,12 +357,12 @@ cloture();setInterval(cloture,15000);
           coord_x: 1.0034,
           coord_y: 43.8832,
           ouverte: true,
-          debut: nowTs - 86400,
-          fin: nowTs + finOffset
+          debut: now - 86400,
+          fin: now + finOffset
         };
       }
     } else {
-      // Mode normal (pas de demo)
+      // Mode normal
       const u = P.get('uuid');
       if (!u) throw 'lien';
       const ac = new AbortController();
@@ -371,14 +374,13 @@ cloture();setInterval(cloture,15000);
       E = await r.json();
     }
 
-    // Vérifier que E contient bien les données nécessaires
     if (!E.uai) throw 'lien';
 
     $('#e-nom').textContent = E.appellation || '(appellation non renseignée)';
     $('#e-com').textContent = E.commune || '';
     $('#e-uai').textContent = E.uai;
-    $('#load').remove(); // Supprimer le message de chargement
-    $('#app').classList.remove('d-none'); // Afficher l'application
+    $('#load').remove();
+    $('#app').classList.remove('d-none');
 
     if (E.ouverte === false && !P.has('demo')) {
       showFerme();
@@ -388,27 +390,19 @@ cloture();setInterval(cloture,15000);
       cloture();
     }
   } catch (err) {
-    $('#load').remove(); // TOUJOURS supprimer le message de chargement
+    $('#load').remove();
     const e = $('#err');
     e.classList.remove('d-none');
     e.textContent = err === 'lien'
-      ? 'Lien invalide ou expiré. Merci d’utiliser l’adresse personnalisée qui vous a été transmise.'
+      ? 'Lien invalide ou expiré.'
       : err === 'indispo'
-        ? 'Le service est momentanément indisponible. Merci de réessayer dans quelques minutes.'
+        ? 'Service indisponible.'
         : err === 'date_invalide'
-          ? 'Format de date invalide. Utilisez le format ISO 8601 (ex: 2026-11-23T10:00:00).'
-          : 'Une erreur est survenue. Veuillez réessayer.';
+          ? 'Format de date invalide. Utilisez ISO 8601 (ex: 2026-11-23T10:00:00).'
+          : 'Erreur inconnue.';
   }
 })();
-function parseNow() {
-  const nowStr = P.get('now');
-  if (!nowStr) return Date.now() / 1000; // Date actuelle par défaut
-  const date = new Date(nowStr);
-  if (isNaN(date.getTime())) {
-    throw new Error('date_invalide');
-  }
-  return date.getTime() / 1000;
-}
+   
 </script>
 </body>
 </html>
