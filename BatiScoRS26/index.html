@@ -73,6 +73,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <div class="fw-bold fs-5" id="e-nom"></div>
     <div><span id="e-com"></span> · UAI <span id="e-uai"></span></div>
   </div>
+  <div id="ferme" class="alert alert-warning d-none" role="alert"></div>
   <h3 class="fs-5">Sommaire</h3>
   <ol>
     <li>Confort thermique global</li>
@@ -265,7 +266,7 @@ $('#mcb').onclick=()=>{const p=$('#mp'),show=p.classList.contains('d-none');if(m
 $('#mb').addEventListener('hidden.bs.modal',()=>{if(map2){map2.remove();map2=null}$('#mp').classList.add('d-none');mcbTxt(false)});
 
 /* ---------- envoi ---------- */
-$('#send').onclick=async()=>{if(maintenant()>=T_REFUS){cloture();return}if(!valid(3))return;const btn=$('#send');
+$('#send').onclick=async()=>{if(E.fin&&maintenant()>=E.fin*1000+GRACE){cloture();return}if(!valid(3))return;const btn=$('#send');
   const f=grab($('#f3')),q32=val('q32'),q33=val('q33'),q34=val('q34');
   const travaux=[q32=='OUI'?'Prévus : '+f.d32.trim():'',q33=='OUI'?'À prévoir : '+f.d33.trim():''].filter(Boolean).join('\n')||'Aucun travaux prévu ni à prévoir';
   const batiments=Object.keys(bat).sort((a,b)=>a-b).map(i=>{const o=bat[i],r={Numero:+i,ID_RNB:o.b1.trim(),Destinations:o.b2.trim()};
@@ -280,27 +281,43 @@ $('#send').onclick=async()=>{if(maintenant()>=T_REFUS){cloture();return}if(!vali
     try{localStorage.removeItem(KEY)}catch{}$(`.step[data-s="3"]`).classList.add('ok');go(4)}
  catch(err){alert(err===403?'La saisie du formulaire est close : votre envoi n’a pas été accepté.':'L’envoi a échoué. Vos réponses sont conservées sur cette page : vous pouvez réessayer.');btn.disabled=false;btn.textContent='Envoyer mes réponses';cloture()}};
 
-/* ---------- clôture de la saisie (heure de Paris, UTC+1 le 9 novembre 2026) ---------- */
-const hh=s=>new Date('2026-11-09T'+s+':00+01:00').getTime();
-const T_MSG=hh('16:30'),T_FIN=hh('23:54'),T_REFUS=hh('23:59');
-const maintenant=()=>P.has('demo')&&P.get('now')?hh(P.get('now')):Date.now();
+/* ---------- clôture de la saisie (dates de la campagne transmises par n8n) ---------- */
+const PREAVIS=30*60*1000,GRACE=5*60*1000;
+const maintenant=()=>P.has('demo')&&P.get('now')?new Date(P.get('now')).getTime():Date.now();
+const fmt=s=>{const d=new Date(s*1000),jo=s%86400===0||s%86400===86399,o={timeZone:jo?'UTC':'Europe/Paris'};
+  const j=d.toLocaleDateString('fr-FR',{...o,weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return jo?j:j+' à '+d.toLocaleTimeString('fr-FR',{...o,hour:'2-digit',minute:'2-digit'}).replace(':','h')};
 function cloture(){
-  const n=maintenant(),b=$('#clo');
-  if(n<T_MSG||cur===4){b.classList.add('d-none');return}
-  const refus=n>=T_REFUS;
+  const b=$('#clo');
+  if(!E.fin||E.ouverte===false||cur===4){b.classList.add('d-none');return}
+  const n=maintenant(),fin=E.fin*1000;
+  if(n<fin-PREAVIS){b.classList.add('d-none');return}
+  const refus=n>=fin+GRACE;
   b.className='alert '+(refus?'alert-danger':'alert-warning');
-  b.textContent=refus?'La saisie du formulaire est close depuis le lundi 9 novembre 2026 à 23h59. Les réponses ne sont plus acceptées.':n>=T_FIN?'La saisie du formulaire est close depuis 23h54. Les envois en cours sont acceptés jusqu’à 23h59.':'La saisie du formulaire sera close lundi 9 novembre 2026 à 23h59.';
+  b.textContent=refus?'La saisie du formulaire est close depuis '+fmt(E.fin)+'. Les réponses ne sont plus acceptées.':n>=fin?'La saisie du formulaire est close depuis '+fmt(E.fin)+'. Les envois en cours sont acceptés pendant 5 minutes.':'La saisie du formulaire sera close '+fmt(E.fin)+'.';
   if(refus)$('#send').disabled=true;
+}
+function showFerme(){
+  const n=maintenant(),m=!E.debut||!E.fin?'Aucune campagne de saisie n’est ouverte pour votre établissement.':n<E.debut*1000?'La saisie du formulaire n’est pas encore ouverte. Elle ouvrira '+fmt(E.debut)+'.':'La saisie du formulaire est close depuis '+fmt(E.fin)+'.';
+  $$('#p0 > h3,#p0 > ol,#p0 > p,#p0 > .text-end').forEach(e=>e.classList.add('d-none'));
+  $('#ferme').textContent=m;$('#ferme').classList.remove('d-none');
+  $('#steps').closest('aside').classList.add('d-none');
+  $('.col-lg-9').className='col-12';
 }
 cloture();setInterval(cloture,15000);
    
 /* ---------- démarrage ---------- */
 (async()=>{try{
-  if(P.has('demo'))E={uai:'0820001F',appellation:'Lycée Norman Foster',commune:'Beaumont-de-Lomagne',coord_x:1.0034,coord_y:43.8832};
-  else{const u=P.get('uuid');if(!u)throw 0;const r=await fetch(CFG.GET+'?uuid='+encodeURIComponent(u));if(!r.ok)throw 0;E=await r.json();if(!E.uai)throw 0}
+  if(P.has('demo')){const t=Math.floor(Date.now()/1000);E={uai:'0820001F',appellation:'Lycée Norman Foster',commune:'Beaumont-de-Lomagne',coord_x:1.0034,coord_y:43.8832,ouverte:!P.has('closed'),debut:t-86400,fin:t+86400}}
+  else{const u=P.get('uuid');if(!u)throw 'lien';
+    const ac=new AbortController(),to=setTimeout(()=>ac.abort(),15000);
+    const r=await fetch(CFG.GET+'?uuid='+encodeURIComponent(u),{signal:ac.signal});clearTimeout(to);
+    if(r.status===404)throw 'lien';if(!r.ok)throw 'indispo';
+    E=await r.json();if(!E.uai)throw 'lien'}
   $('#e-nom').textContent=E.appellation||'(appellation non renseignée)';$('#e-com').textContent=E.commune||'';$('#e-uai').textContent=E.uai;
-  $('#load').remove();$('#app').classList.remove('d-none');go(restore())}
-catch{$('#load').remove();const e=$('#err');e.classList.remove('d-none');e.textContent='Lien invalide ou expiré. Merci d’utiliser l’adresse personnalisée qui vous a été transmise.'}})();
+  $('#load').remove();$('#app').classList.remove('d-none');
+  if(E.ouverte===false){showFerme();go(0)}else{go(restore());cloture()}}
+catch(err){$('#load').remove();const e=$('#err');e.classList.remove('d-none');e.textContent=err==='lien'?'Lien invalide ou expiré. Merci d’utiliser l’adresse personnalisée qui vous a été transmise.':'Le service est momentanément indisponible. Merci de réessayer dans quelques minutes.'}})();
 </script>
 </body>
 </html>
