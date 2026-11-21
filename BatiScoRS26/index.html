@@ -188,8 +188,9 @@ function enfants(){
   let v=E.enfants??E.Enfants;
   if(typeof v==='string'){try{v=JSON.parse(v)}catch{v=null}}
   return Array.isArray(v)?v.filter(x=>x&&x.UAI):[]}
+const estComplet=s=>/^compl[eé]t[eé]e?$/i.test(String(s||'').trim());   // « Complété » uniquement (« Partiel », « Non complété », « Non commencé » restent affichés)
 function showEnfants(){
-  const L=enfants(),n=L.length;
+  const L=enfants().filter(x=>!estComplet(x.Statut_questionnaire)),n=L.length;   // secondaires déjà complétés : non affichés
   $('#enfants').classList.toggle('d-none',!n);$('#b2-enf').classList.toggle('d-none',!n);
   if(!n)return;
   $('#enf-txt').textContent=n>1?'de plusieurs établissements secondaires':'d’un établissement secondaire';
