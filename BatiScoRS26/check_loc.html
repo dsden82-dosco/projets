@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contrôle de la localisation des établissements</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
+<style>
+@font-face{font-family:Marianne;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/fonts/Marianne-Regular.woff2) format("woff2")}
+@font-face{font-family:Marianne;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.11.2/dist/fonts/Marianne-Bold.woff2) format("woff2")}
+:root{--bf:#000091;--rm:#e1000f}
+*{box-sizing:border-box}
+body{margin:0;background:#f6f6f6;color:#161616;font:14px/1.4 Marianne,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid #ddd;border-top:5px solid;border-image:linear-gradient(90deg,#000091 33%,#fff 33% 66%,#e1000f 66%) 1;padding:.6rem 1rem;display:flex;gap:1rem;align-items:baseline;flex-wrap:wrap}
+h1{font-size:1.1rem;margin:0;color:var(--bf)}
+#info{color:#666;font-size:.85rem}
+#msg{margin:1rem;padding:.8rem 1rem;background:#fff4e5;border-left:4px solid #b34000;display:none}
+#grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;padding:1rem}
+@media(max-width:900px){#grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:#fff;border:1px solid #ddd;padding:.6rem}
+.card .t{margin-bottom:.4rem;min-height:2.8em}
+.card .t b{color:var(--bf)}
+.map{height:300px;border:1px solid #ccc;background:#eee}
+.map .na{padding:2rem 1rem;color:#666;text-align:center}
+.coord{display:block;width:100%;margin-top:.4rem;padding:.3rem .5rem;border:1px solid #ccc;background:#fafafa;font:inherit;text-align:left;cursor:copy}
+.coord:hover{background:#eef;border-color:var(--bf)}
+.coord.ok{background:#e3f6e8;border-color:#18753c}
+.coord .l{color:#666}
+.coord .mv{float:right;color:#b34000}
+.leaflet-marker-icon.rose-ico{pointer-events:none!important}
+.hl text{paint-order:stroke;stroke:#000;stroke-width:3px;fill:#fff;font:700 12px Arial;text-anchor:middle;dominant-baseline:middle}
+</style>
+</head>
+<body>
+<header><h1>Contrôle de la localisation — établissements principaux</h1><div id="info">Chargement…</div></header>
+<div id="msg"></div>
+<main id="grid"></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://grist.numerique.gouv.fr/grist-plugin-api.js"></script>
+<script>
+/*  CONTRÔLE DE LOCALISATION — widget personnalisé Grist (accès : lecture de la table)
+    Table : Bati_recensement, filtre Hierarchie = "principal", tri UAI croissant.
+    Colonnes à associer (association automatique si les noms sont identiques) :
+    UAI, Sigle (facultatif), Appellation_officielle, Commune, coord_x, coord_y (Lambert 93), Hierarchie.
+    Essai hors Grist : ajouter ?demo à l'URL. */
+const $=s=>document.querySelector(s),P=new URLSearchParams(location.search);
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Lambert-93 <-> WGS84 ---------- */
+const N=.725607765053267,C=11754255.426096,E1=.0818191910428158,YS=12655612.049876;
+function ll(x,y){x=+x;y=+y;if(!isFinite(x)||!isFinite(y))return[NaN,NaN];if(Math.abs(x)<=180&&Math.abs(y)<=90)return[y,x];
+  const dx=x-7e5,dy=YS-y,L=-Math.log(Math.hypot(dx,dy)/C)/N,g=Math.atan2(dx,dy);
+  let p=2*Math.atan(Math.exp(L))-Math.PI/2;for(let i=0;i<10;i++){const s=E1*Math.sin(p);p=2*Math.atan(Math.pow((1+s)/(1-s),E1/2)*Math.exp(L))-Math.PI/2}
+  return[p*180/Math.PI,3+g/N*180/Math.PI]}
+function l93(lat,lon){const f=lat*Math.PI/180,s=E1*Math.sin(f),
+  L=Math.log(Math.tan(Math.PI/4+f/2)*Math.pow((1-s)/(1+s),E1/2)),R=C*Math.exp(-N*L),g=N*(lon-3)*Math.PI/180;
+  return[7e5+R*Math.sin(g),YS-R*Math.cos(g)]}
+
+/* ---------- boussole (même dessin que le questionnaire) ---------- */
+function rose(sz){const q=(a,r)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/180)].map(v=>v.toFixed(1)).join(',');
+  let s='<svg viewBox="-125 -125 250 250" width="'+sz+'" height="'+sz+'" style="filter:drop-shadow(0 0 2px #000)"><path d="M0,0 L'+q(157.5,100)+' A100,100 0 0 1 '+q(292.5,100)+' Z" fill="#ff9900" fill-opacity=".3" stroke="#ff9900" stroke-width="1.5"/><circle r="100" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M0,-100V100M-100,0H100" stroke="#fff" stroke-opacity=".7"/>';
+  for(let a=0;a<360;a+=22.5){const[x1,y1]=q(a,100).split(','),[x2,y2]=q(a,a%90?106:112).split(',');s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#fff" stroke-width="2"/>`}
+  s+='<path d="M0,-100 L-8,-76 L0,-84 L8,-76Z" fill="#e1000f" stroke="#fff"/><g class="hl">';
+  [['N',0],['NE',45],['E',90],['SE',135],['S',180],['SO',225],['O',270],['NO',315]].forEach(([t,a])=>{const[X,Y]=q(a,116).split(',');s+=`<text x="${X}" y="${Y}">${t}</text>`});
+  return s+'</g><circle r="4" fill="#e1000f" stroke="#fff" stroke-width="2"/><circle r="16" fill="#fff" fill-opacity=".01" style="pointer-events:auto;cursor:move"><title>Glisser pour déplacer la boussole</title></circle></svg>'}
+
+/* ---------- copie dans le presse-papiers ---------- */
+function copier(txt,btn){
+  const fin=()=>{btn.classList.add('ok');setTimeout(()=>btn.classList.remove('ok'),900)};
+  const repli=()=>{const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');fin()}catch{}t.remove()};
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(txt).then(fin,repli);else repli()}
+
+/* ---------- cartes ---------- */
+const ign=()=>L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'});
+const plan=()=>L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',{maxZoom:19,attribution:'© IGN Géoplateforme'});
+const esri=()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri'});
+
+let maps=[],moved={};   // moved : positions de boussole déplacées, conservées si la table est rafraîchie
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){io.unobserve(e.target);initCard(e.target)}}),{rootMargin:'400px'});
+
+function setCoord(card,lat,lon){
+  const d=card._d,[x,y]=l93(lat,lon).map(Math.round),b=card.querySelector('.coord');
+  card._xy=[x,y];
+  const dist=Math.hypot(...l93(lat,lon).map((v,i)=>v-d.xy0[i]));
+  b.innerHTML='<span class="l">coord_x</span> <b>'+x+'</b> · <span class="l">coord_y</span> <b>'+y+'</b>'+(dist>=1?'<span class="mv">déplacée de '+Math.round(dist)+' m</span>':'')}
+
+function initCard(card){
+  const d=card._d,el=card.querySelector('.map');
+  const p=moved[d.uai]&&moved[d.uai].sig===d.sig?moved[d.uai].p:d.ll;
+  const bases={'Vue aérienne IGN':ign(),'Plan IGN':plan(),'Vue satellite Esri':esri()};
+  const m=L.map(el,{layers:[bases['Vue aérienne IGN']]}).setView(p,18);maps.push(m);
+  L.control.layers(bases).addTo(m);
+  const mk=L.marker(p,{draggable:true,icon:L.divIcon({className:'rose-ico',html:rose(200),iconSize:[200,200],iconAnchor:[100,100]})}).addTo(m);
+  const maj=()=>{const c=mk.getLatLng();setCoord(card,c.lat,c.lng);moved[d.uai]={sig:d.sig,p:[c.lat,c.lng]}};
+  mk.on('drag',maj);mk.on('dragend',maj);
+  setCoord(card,p[0],p[1])}
+
+function render(rows){
+  maps.forEach(m=>m.remove());maps=[];io.disconnect();
+  const grid=$('#grid');grid.innerHTML='';
+  const L_=rows.filter(r=>String(r.Hierarchie??'').trim().toLowerCase()==='principal'&&r.UAI)
+    .sort((a,b)=>String(a.UAI).localeCompare(String(b.UAI)));
+  $('#info').textContent=L_.length+' établissement'+(L_.length>1?'s':'')+' principal'+(L_.length>1?'aux':'')+' · cliquer sur les coordonnées pour les copier au format [x, y]';
+  L_.forEach(r=>{
+    const uai=String(r.UAI),[lat,lon]=ll(r.coord_x,r.coord_y),ok=isFinite(lat)&&isFinite(lon);
+    const card=document.createElement('div');card.className='card';
+    card._d={uai,sig:r.coord_x+'|'+r.coord_y,ll:[lat,lon],xy0:ok?l93(lat,lon):[NaN,NaN]};
+    card.innerHTML='<div class="t"><b>'+esc(uai)+'</b><br>'+esc([r.Sigle,r.Appellation_officielle].filter(Boolean).join(' '))+(r.Commune?', '+esc(r.Commune):'')+'</div>'
+      +'<div class="map">'+(ok?'':'<div class="na">Géolocalisation indisponible pour cet établissement.</div>')+'</div>'
+      +'<button type="button" class="coord" title="Cliquer pour copier [coord_x, coord_y]">—</button>';
+    grid.appendChild(card);
+    const b=card.querySelector('.coord');
+    b.onclick=()=>{if(card._xy)copier('['+card._xy[0]+', '+card._xy[1]+']',b)};
+    if(ok){const p=moved[uai]&&moved[uai].sig===card._d.sig?moved[uai].p:[lat,lon];setCoord(card,p[0],p[1]);io.observe(card)}
+  })}
+
+/* ---------- données ---------- */
+function msg(t){const m=$('#msg');m.textContent=t;m.style.display=t?'block':'none'}
+if(window.grist&&!P.has('demo')){
+  grist.ready({requiredAccess:'read table',columns:[
+    {name:'UAI',title:'UAI',type:'Text,Any'},
+    {name:'Sigle',title:'Sigle',type:'Text,Any',optional:true},
+    {name:'Appellation_officielle',title:'Nom de l’établissement',type:'Text,Any'},
+    {name:'Commune',title:'Commune',type:'Text,Any'},
+    {name:'coord_x',title:'coord_x (Lambert 93)',type:'Numeric,Any'},
+    {name:'coord_y',title:'coord_y (Lambert 93)',type:'Numeric,Any'},
+    {name:'Hierarchie',title:'Hierarchie',type:'Text,Choice,Any'}]});
+  grist.onRecords(recs=>{
+    const rows=grist.mapColumnNames(recs);
+    if(!rows){msg('Associez les colonnes du widget (panneau de création du widget) : UAI, Appellation_officielle, Commune, coord_x, coord_y, Hierarchie.');return}
+    msg('');render(rows)});
+}else{   // essai hors Grist : ?demo
+  render([
+    {UAI:'0820004H',Sigle:'EPPU',Appellation_officielle:'École primaire Jean Jaurès (démo)',Commune:'Montauban',coord_x:1.3550,coord_y:44.0180,Hierarchie:'principal'},
+    {UAI:'0820039X',Sigle:'LPO',Appellation_officielle:'Lycée polyvalent (démo)',Commune:'Castelsarrasin',coord_x:1.1090,coord_y:44.0390,Hierarchie:'principal'},
+    {UAI:'0820003G',Sigle:'COL',Appellation_officielle:'Collège (démo)',Commune:'Moissac',coord_x:1.0870,coord_y:44.1040,Hierarchie:'principal'},
+    {UAI:'0820099Z',Sigle:'SEGPA',Appellation_officielle:'SEGPA (démo, secondaire : non affiché)',Commune:'Moissac',coord_x:1.0870,coord_y:44.1040,Hierarchie:'secondaire'}]);
+}
+</script>
+</body>
+</html>
