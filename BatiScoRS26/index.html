@@ -282,7 +282,13 @@ $('#send').onclick=async()=>{if(['avant','apres'].includes(etat().s)&&!(P.has('d
  catch(err){alert(err===403?'La saisie du formulaire est close : votre envoi n’a pas été accepté.':'L’envoi a échoué. Vos réponses sont conservées sur cette page : vous pouvez réessayer.');btn.disabled=false;btn.textContent='Envoyer mes réponses';cloture()}};
 
 /* ---------- clôture de la saisie (dates de la campagne transmises par n8n) ---------- */
-const PREAVIS=30*60*1000,GRACE=5*60*1000;
+const GRACE=5*60*1000,H=3600*1000,J=24*H;
+/* Durée du préavis de clôture selon la durée de la campagne :
+   ≥ 7 jours : 72 h ; ≥ 4 jours : 24 h ; ≥ 2 jours : 12 h ; sinon (ou dates incomplètes) : 30 min */
+function preavis(){
+  if(!E.debut||!E.fin)return 30*60*1000;
+  const d=(E.fin-E.debut)*1000;
+  return d>=7*J?72*H:d>=4*J?24*H:d>=2*J?12*H:30*60*1000}
 const maintenant=()=>P.has('demo')&&P.get('now')?new Date(P.get('now')).getTime():Date.now();
 const fmt=s=>{const d=new Date(s*1000),jo=s%86400===0||s%86400===86399,o={timeZone:jo?'UTC':'Europe/Paris'};
   const j=d.toLocaleDateString('fr-FR',{...o,weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -302,7 +308,7 @@ function etat(){
   const t=maintenant(),d=E.debut?E.debut*1000:null,f=E.fin?E.fin*1000:null;
   if(d&&t<d)return{s:'avant'};
   if(f&&t>=f+GRACE)return{s:'apres'};
-  if(f&&t>=f-PREAVIS)return{s:'preavis',reste:Math.max(0,Math.ceil((f-t)/60000))};
+  if(f&&t>=f-preavis())return{s:'preavis',reste:Math.max(0,Math.ceil((f-t)/60000))};
   if(!d&&!f&&E.ouverte===false)return{s:'apres'};   // repli si n8n ne fournit pas de dates
   return{s:'ouverte'}}
 
@@ -312,6 +318,10 @@ function showFerme(ferme){   // verrouille / déverrouille la saisie
   else if(verrouille){$$('[data-go="1"]').forEach(b=>b.disabled=false);$('#send').disabled=false}
   verrouille=ferme}
 
+const duree=m=>{const j=Math.floor(m/1440),h=Math.floor(m%1440/60),mn=m%60;
+  if(j)return j+' jour'+(j>1?'s':'')+(h?' et '+h+' h':'');
+  if(h)return h+' h'+(mn?' '+String(mn).padStart(2,'0'):'');
+  return m+' min'};
 function cloture(){
   const b=$('#clo');
   if(P.has('demo')&&!P.has('test-fermeture')){b.classList.add('d-none');showFerme(false);return}
@@ -319,7 +329,7 @@ function cloture(){
   b.className='alert alert-warning'+(e.s==='ouverte'?' d-none':'');
   if(e.s==='avant')b.innerHTML='La saisie n’est pas encore ouverte : elle sera accessible à partir du <b>'+fmt(E.debut)+'</b>.';
   else if(e.s==='apres')b.innerHTML='La saisie est <b>close</b>'+(E.fin?' depuis le '+fmt(E.fin):'')+'. Vos réponses ne peuvent plus être enregistrées.';
-  else if(e.s==='preavis')b.innerHTML='La saisie sera close le <b>'+fmt(E.fin)+'</b>'+(e.reste?' (dans '+e.reste+' min). Pensez à envoyer vos réponses.':' : envoyez vos réponses sans attendre.');
+  else if(e.s==='preavis')b.innerHTML='La saisie sera close le <b>'+fmt(E.fin)+'</b>'+(e.reste?' (dans '+duree(e.reste)+'). Pensez à envoyer vos réponses.':' : envoyez vos réponses sans attendre.');
   showFerme(e.s==='avant'||e.s==='apres')}
 cloture();setInterval(cloture,15000);
 
