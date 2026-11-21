@@ -44,7 +44,8 @@ mark{background:#feffeb;box-decoration-break:clone;-webkit-box-decoration-break:
 <body>
 <!--
 CONTRAT n8n
-GET  CFG.GET + ?uuid=...  -> {uai, appellation, commune, coord_x, coord_y, nb_batiments?}
+GET  CFG.GET + ?uuid=...  -> {uai, appellation, commune, coord_x, coord_y, nb_batiments?, debut, fin,
+   Enfants?  (colonne $Enfants de Bati_recensement : tableau ou chaîne JSON [{UAI, appellation_officielle, Statut_questionnaire, URL_lien}])}
 POST CFG.POST (JSON)      -> {uuid, uai, date, confort:{Question_1_1,Question_1_2,Question_1_3,Resultat},
    nb_batiments, batiments:[{Numero, ID_RNB, Destinations, Question_2_1_3..8, Commentaire_2_1_3..8, Ombrage_types[]}],
    travaux:{q32,d32,q33,d33, colonne_Q, colonne_R, colonne_S}}
@@ -72,6 +73,11 @@ Essai sans n8n : ajouter ?demo à l'URL.
     <div class="small text-muted">Établissement</div>
     <div class="fw-bold fs-5" id="e-nom"></div>
     <div><span id="e-com"></span> · UAI <span id="e-uai"></span></div>
+  </div>
+  <div id="enfants" class="alert alert-info d-none">
+    <p class="mb-2">Votre établissement est parent <span id="enf-txt"></span> :</p>
+    <table class="table table-sm bg-white mb-2"><thead><tr><th>UAI</th><th>Nom</th><th>Statut</th></tr></thead><tbody id="enf-tb"></tbody></table>
+    <p class="mb-0">En partie 2 de ce formulaire, merci de mentionner cet usage dans le champ « 2.1.2 Destination(s) principale(s) du bâtiment » : par exemple « classes SEGPA ».</p>
   </div>
   <div id="ferme" class="alert alert-warning d-none" role="alert"></div>
   <h3 class="fs-5">Sommaire</h3>
@@ -157,7 +163,7 @@ Essai sans n8n : ajouter ?demo à l'URL.
       <input id="b1" name="b1" class="form-control" placeholder="">
       <div class="form-text">Également connu sous le nom de "ID-RNB". Champ facultatif. Vous pouvez le rechercher sur <a href="https://rnb.beta.gouv.fr" target="_blank" rel="noopener">rnb.beta.gouv.fr</a>.<br/>
       Si un bâtiment présente plusieurs ID-RNB, n'en mentionner qu'un ici.</div></div>
-    <div class="q" data-req><p class="fw-bold mb-2"><b>2.1.2</b> Destination(s) principale(s) du bâtiment</p><input type="text" id="b2" name="b2" class="form-control"><div class="form-text">Par exemple : Classes élémentaires, salle de restauration élèves, salle de motricité, etc.</div></div>
+    <div class="q" data-req><p class="fw-bold mb-2"><b>2.1.2</b> Destination(s) principale(s) du bâtiment</p><input type="text" id="b2" name="b2" class="form-control"><div class="form-text">Par exemple : Classes élémentaires, salle de restauration élèves, salle de motricité, etc.</div><div id="b2-enf" class="form-text text-primary fw-bold d-none">Votre établissement étant parent d’établissement(s) secondaire(s), mentionnez ici cet usage (par exemple : « classes SEGPA »).</div></div>
   </div>
   <div class="modal-footer"><button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary">Enregistrer le bâtiment</button></div>
 </form></div></div>
@@ -176,6 +182,19 @@ const BQ=[
 ['8','2.1.8','Ce bâtiment dispose-t-il d’<mark>éléments permettant l’ombrage total des façades exposées au soleil l’après-midi</mark> (auvent, arbres de grande hauteur…) ?']];
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const P=new URLSearchParams(location.search);
+/* ---------- établissements secondaires liés (colonne $Enfants) ---------- */
+const escH=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function enfants(){
+  let v=E.enfants??E.Enfants;
+  if(typeof v==='string'){try{v=JSON.parse(v)}catch{v=null}}
+  return Array.isArray(v)?v.filter(x=>x&&x.UAI):[]}
+function showEnfants(){
+  const L=enfants(),n=L.length;
+  $('#enfants').classList.toggle('d-none',!n);$('#b2-enf').classList.toggle('d-none',!n);
+  if(!n)return;
+  $('#enf-txt').textContent=n>1?'de plusieurs établissements secondaires':'d’un établissement secondaire';
+  $('#enf-tb').innerHTML=L.map(x=>'<tr><td>'+escH(x.UAI)+'</td><td>'+escH(x.appellation_officielle)+'</td><td>'+escH(x.Statut_questionnaire)+'</td></tr>').join('')}
+
 let E={},bat={},cur=0,nbPrev='',cb=0,map,map2,rp={},resultat='';
 
 /* ---------- construction ---------- */
@@ -363,7 +382,7 @@ function parseNow() {
           const now = parseNow();
           const finOffset = P.get('demo-campagne') ? parseInt(P.get('demo-campagne')) * 86400 : 86400 * 7;
           E = {
-            uai: '001XXXX1',
+            uai: 'DEMO_UAI',
             appellation: 'Établissement TEST (Demo)',
             commune: 'Ville Test',
             coord_x: 1.0034,
@@ -378,7 +397,7 @@ function parseNow() {
         const now = parseNow();
         const finOffset = P.get('demo-campagne') ? parseInt(P.get('demo-campagne')) * 86400 : 86400 * 7;
         E = {
-          uai: '001XXXX1',
+          uai: 'DEMO_UAI',
           appellation: 'Établissement TEST (Demo)',
           commune: 'Ville Test',
           coord_x: 1.0034,
@@ -406,6 +425,11 @@ function parseNow() {
     $('#e-nom').textContent = E.appellation || '(appellation non renseignée)';
     $('#e-com').textContent = E.commune || '';
     $('#e-uai').textContent = E.uai;
+    if (P.has('demo') && P.has('demo-enfants') && !enfants().length)   // test : ?demo&demo-enfants
+      E.Enfants = JSON.stringify([
+        { UAI: '0820039X', appellation_officielle: 'Section d’enseignement professionnel du lycée polyvalent (démo)', Statut_questionnaire: 'Non commencé', URL_lien: 'https://exemple.fr/index.html?uuid=demo-enfant-1' },
+        { UAI: '0820040Y', appellation_officielle: 'SEGPA du collège (démo)', Statut_questionnaire: 'Complété', URL_lien: 'https://exemple.fr/index.html?uuid=demo-enfant-2' }]);
+    showEnfants();
     $('#load').remove();
     $('#app').classList.remove('d-none');
 
