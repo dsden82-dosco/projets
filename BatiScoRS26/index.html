@@ -266,7 +266,7 @@ $('#mcb').onclick=()=>{const p=$('#mp'),show=p.classList.contains('d-none');if(m
 $('#mb').addEventListener('hidden.bs.modal',()=>{if(map2){map2.remove();map2=null}$('#mp').classList.add('d-none');mcbTxt(false)});
 
 /* ---------- envoi ---------- */
-$('#send').onclick=async()=>{if(E.fin&&maintenant()>=E.fin*1000+GRACE){cloture();return}if(!valid(3))return;const btn=$('#send');
+$('#send').onclick=async()=>{if(['avant','apres'].includes(etat().s)&&!(P.has('demo')&&!P.has('test-fermeture'))){cloture();return}if(!valid(3))return;const btn=$('#send');
   const f=grab($('#f3')),q32=val('q32'),q33=val('q33'),q34=val('q34');
   const travaux=[q32=='OUI'?'Prévus : '+f.d32.trim():'',q33=='OUI'?'À prévoir : '+f.d33.trim():''].filter(Boolean).join('\n')||'Aucun travaux prévu ni à prévoir';
   const batiments=Object.keys(bat).sort((a,b)=>a-b).map(i=>{const o=bat[i],r={Numero:+i,ID_RNB:o.b1.trim(),Destinations:o.b2.trim()};
@@ -287,25 +287,42 @@ const maintenant=()=>P.has('demo')&&P.get('now')?new Date(P.get('now')).getTime(
 const fmt=s=>{const d=new Date(s*1000),jo=s%86400===0||s%86400===86399,o={timeZone:jo?'UTC':'Europe/Paris'};
   const j=d.toLocaleDateString('fr-FR',{...o,weekday:'long',day:'numeric',month:'long',year:'numeric'});
   return jo?j:j+' à '+d.toLocaleTimeString('fr-FR',{...o,hour:'2-digit',minute:'2-digit'}).replace(':','h')};
-function cloture() {
-  const b = $('#clo');
-  // NOUVEAU : Ignorer la clôture uniquement si demo ET test-fermeture n'est pas présent
-  if (P.has('demo') && !P.has('test-fermeture')) {
-    b.classList.add('d-none');
-    return;
-  }
-  // ... (reste du code inchangé)
-}
 
-function showFerme() {
-  // NOUVEAU : Ignorer showFerme uniquement si demo ET test-fermeture n'est pas présent
-  if (P.has('demo') && !P.has('test-fermeture')) {
-    return;
-  }
-  // ... (reste du code inchangé)
-}
+/* Normalise les dates reçues de n8n -> E.debut / E.fin en SECONDES Unix.
+   Accepte debut/fin ou Date_debut/Date_fin, en secondes, millisecondes, nombre ou texte, ou ISO 8601. */
+function normDates(){
+  const n=v=>{if(v==null||v==='')return null;let x=Number(v);
+    if(!Number.isFinite(x)){x=Date.parse(v)/1000;return Number.isFinite(x)?x:null}
+    return x>1e11?x/1000:x};
+  E.debut=n(E.debut??E.Date_debut??E.date_debut);
+  E.fin=n(E.fin??E.Date_fin??E.date_fin)}
+
+/* État de la campagne : avant | ouverte | preavis | apres */
+function etat(){
+  const t=maintenant(),d=E.debut?E.debut*1000:null,f=E.fin?E.fin*1000:null;
+  if(d&&t<d)return{s:'avant'};
+  if(f&&t>=f+GRACE)return{s:'apres'};
+  if(f&&t>=f-PREAVIS)return{s:'preavis',reste:Math.max(0,Math.ceil((f-t)/60000))};
+  if(!d&&!f&&E.ouverte===false)return{s:'apres'};   // repli si n8n ne fournit pas de dates
+  return{s:'ouverte'}}
+
+let verrouille=false;
+function showFerme(ferme){   // verrouille / déverrouille la saisie
+  if(ferme){$$('[data-go="1"]').forEach(b=>b.disabled=true);$('#send').disabled=true}
+  else if(verrouille){$$('[data-go="1"]').forEach(b=>b.disabled=false);$('#send').disabled=false}
+  verrouille=ferme}
+
+function cloture(){
+  const b=$('#clo');
+  if(P.has('demo')&&!P.has('test-fermeture')){b.classList.add('d-none');showFerme(false);return}
+  const e=etat();
+  b.className='alert alert-warning'+(e.s==='ouverte'?' d-none':'');
+  if(e.s==='avant')b.innerHTML='La saisie n’est pas encore ouverte : elle sera accessible à partir du <b>'+fmt(E.debut)+'</b>.';
+  else if(e.s==='apres')b.innerHTML='La saisie est <b>close</b>'+(E.fin?' depuis le '+fmt(E.fin):'')+'. Vos réponses ne peuvent plus être enregistrées.';
+  else if(e.s==='preavis')b.innerHTML='La saisie sera close le <b>'+fmt(E.fin)+'</b>'+(e.reste?' (dans '+e.reste+' min). Pensez à envoyer vos réponses.':' : envoyez vos réponses sans attendre.');
+  showFerme(e.s==='avant'||e.s==='apres')}
 cloture();setInterval(cloture,15000);
-   
+
 /* ---------- démarrage ---------- */
    // Fonction pour parser la date de manière sécurisée
 function parseNow() {
@@ -382,13 +399,10 @@ function parseNow() {
     $('#load').remove();
     $('#app').classList.remove('d-none');
 
-    if (E.ouverte === false && !P.has('demo')) {
-      showFerme();
-      go(0);
-    } else {
-      go(restore());
-      cloture();
-    }
+    normDates();
+    cloture();
+    const e0 = etat().s, ferme = (e0 === 'avant' || e0 === 'apres') && !(P.has('demo') && !P.has('test-fermeture'));
+    go(ferme ? 0 : restore());
   } catch (err) {
     $('#load').remove();
     const e = $('#err');
