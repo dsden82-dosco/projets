@@ -47,7 +47,7 @@ h1{font-size:1.1rem;margin:0;color:var(--bf)}
     Essai hors Grist : ajouter ?demo à l'URL. */
 const $=s=>document.querySelector(s),P=new URLSearchParams(location.search);
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
+const num=v=>typeof v==='number'?v:parseFloat(String(v??'').replace(/\s/g,'').replace(',','.'));
 /* ---------- Lambert-93 <-> WGS84 ---------- */
 const N=.725607765053267,C=11754255.426096,E1=.0818191910428158,YS=12655612.049876;
 function ll(x,y){x=+x;y=+y;if(!isFinite(x)||!isFinite(y))return[NaN,NaN];if(Math.abs(x)<=180&&Math.abs(y)<=90)return[y,x];
@@ -99,6 +99,7 @@ function initCard(card){
 
 function render(rows){
   maps.forEach(m=>m.remove());maps=[];io.disconnect();
+  const uai=String(r.UAI),[lat,lon]=ll(num(r.coord_x),num(r.coord_y)),ok=...
   const grid=$('#grid');grid.innerHTML='';
   const L_=rows.filter(r=>String(r.Hierarchie??'').trim().toLowerCase()==='principal'&&r.UAI)
     .sort((a,b)=>String(a.UAI).localeCompare(String(b.UAI)));
@@ -124,8 +125,8 @@ if(window.grist&&!P.has('demo')){
     {name:'Sigle',title:'Sigle',type:'Text,Any',optional:true},
     {name:'Appellation_officielle',title:'Nom de l’établissement',type:'Text,Any'},
     {name:'Commune',title:'Commune',type:'Text,Any'},
-    {name:'coord_x',title:'coord_x (Lambert 93)',type:'Numeric,Any'},
-    {name:'coord_y',title:'coord_y (Lambert 93)',type:'Numeric,Any'},
+    {name:'coord_x',title:'coord_x (Lambert 93)',type:'Any'},
+    {name:'coord_y',title:'coord_y (Lambert 93)',type:'Any'},
     {name:'Hierarchie',title:'Hierarchie',type:'Text,Choice,Any'}]});
   grist.onRecords(recs=>{
     const rows=grist.mapColumnNames(recs);
